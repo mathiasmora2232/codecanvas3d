@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Página 3D | Producto</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Página3D</a>
+      <button class="nav-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Menú">☰</button>
+      <nav id="main-nav" class="main-nav" aria-label="Principal">
+        <a href="index.html">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a href="contacto.html">Contacto</a>
+        <a href="solicitudes.html">Solicitudes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="container section">
+      <div class="breadcrumbs"><a href="productos.html">⟵ Volver a productos</a></div>
+      <div id="product-detail" class="detail-grid" aria-live="polite">
+        <div class="detail-media">
+          <img id="detail-image" src="img/large-placeholder.svg" alt="Imagen del producto" />
+          <div id="detail-thumbs" class="thumbs" aria-label="Más imágenes"></div>
+        </div>
+        <div class="detail-info">
+          <h1 id="detail-title" class="section-title">Producto</h1>
+          <div id="detail-price" class="price"></div>
+          <p id="detail-descripcion" class="detail-descripcion"></p>
+          <h3>Especificaciones</h3>
+          <ul id="detail-especificaciones" class="spec-list"></ul>
+          <div class="detail-actions">
+            <a class="btn btn-primary" href="contacto.html">Solicitar cotización</a>
+          </div>
+        </div>
+      </div>
+      <div id="detail-empty" class="detail-empty hidden">No se encontró el producto.</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Página3D</strong>
+        <p>Soluciones en impresión 3D a medida.</p>
+      </div>
+      <div class="footer-contact">
+        <p>Email: <a href="mailto:contacto@pagina3d.test">contacto@pagina3d.test</a></p>
+        <p>Tel: +57 300 000 0000</p>
+      </div>
+      <div class="footer-copy">© 2025 Página3D. Todos los derechos reservados.</div>
+    </div>
+  </footer>
+
+  <script src="js/site.js" defer></script>
+  <script src="js/producto.js" defer></script>
+</body>
+</html>

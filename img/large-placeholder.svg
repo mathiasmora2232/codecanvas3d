@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Imagen interna grande">
+  <defs>
+    <radialGradient id="rg" cx="30%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#ff6b6b" stop-opacity="0.55"/>
+      <stop offset="80%" stop-color="#f6f8fc" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#f6f8fc" stop-opacity="1"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="#f6f8fc"/>
+  <rect x="32" y="32" width="1536" height="936" rx="26" fill="url(#rg)"/>
+  <g fill="#1f2530" font-family="Segoe UI, Roboto, Arial" text-anchor="middle">
+    <text x="800" y="520" font-size="40">Imagen Interna</text>
+    <text x="800" y="565" font-size="20" fill="#606b85">1600×1000</text>
+  </g>
+</svg>

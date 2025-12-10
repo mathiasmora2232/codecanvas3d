@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Página 3D | Contacto</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Página3D</a>
+      <button class="nav-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Menú">☰</button>
+      <nav id="main-nav" class="main-nav" aria-label="Principal">
+        <a href="index.html">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a class="active" href="contacto.html">Contacto</a>
+        <a href="solicitudes.html">Solicitudes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="container section">
+      <h1 class="section-title">Contacto</h1>
+      <p>Escríbenos y en breve nos pondremos en contacto.</p>
+      <form class="form" id="contact-form" onsubmit="event.preventDefault(); alert('Gracias por tu mensaje.');">
+        <div class="form-row">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" name="nombre" type="text" required />
+        </div>
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+        </div>
+        <div class="form-row">
+          <label for="mensaje">Mensaje</label>
+          <textarea id="mensaje" name="mensaje" rows="5" required></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Enviar</button>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Página3D</strong>
+        <p>Atención de lunes a viernes, 9:00 a 18:00.</p>
+      </div>
+      <div class="footer-contact">
+        <p>Email: <a href="mailto:contacto@pagina3d.test">contacto@pagina3d.test</a></p>
+        <p>Tel: +57 300 000 0000</p>
+      </div>
+      <div class="footer-copy">© 2025 Página3D. Todos los derechos reservados.</div>
+    </div>
+  </footer>
+</body>
+  <script src="js/site.js" defer></script>
+</html>

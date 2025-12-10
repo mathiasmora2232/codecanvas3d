@@ -1,0 +1,72 @@
+[
+  {
+    "id": "p01",
+    "title": "Modelo WhatsApp 1",
+    "precio": 29000,
+    "descripcion": "Producto agregado desde imágenes de WhatsApp.",
+    "especificaciones": ["Impresión 3D", "Revisión visual", "Imágenes reales"],
+    "imagenesPeque": ["img/WhatsApp Image 2025-12-10 at 11.58.54 AM.jpeg"],
+    "imagenInterna": "img/WhatsApp Image 2025-12-10 at 11.58.54 AM.jpeg",
+    "destacado": true
+  },
+  {
+    "id": "p2",
+    "title": "Modelo WhatsApp 2",
+    "precio": 31000,
+    "descripcion": "Producto agregado desde imágenes de WhatsApp.",
+    "especificaciones": ["Impresión 3D", "Revisión visual", "Imágenes reales"],
+    "imagenesPeque": ["img/WhatsApp Image 2025-12-10 at 11.58.54 AM (1).jpeg"],
+    "imagenInterna": "img/WhatsApp Image 2025-12-10 at 11.58.54 AM (1).jpeg",
+    "destacado": true
+  },
+  {
+    "id": "p3",
+    "title": "Modelo WhatsApp 3",
+    "precio": 32000,
+    "descripcion": "Producto agregado desde imágenes de WhatsApp.",
+    "especificaciones": ["Impresión 3D", "Revisión visual", "Imágenes reales"],
+    "imagenesPeque": ["img/WhatsApp Image 2025-12-10 at 11.58.54 AM (2).jpeg"],
+    "imagenInterna": "img/WhatsApp Image 2025-12-10 at 11.58.54 AM (2).jpeg",
+    "destacado": false
+  },
+  {
+    "id": "p4",
+    "title": "Modelo WhatsApp 4",
+    "precio": 33000,
+    "descripcion": "Producto agregado desde imágenes de WhatsApp.",
+    "especificaciones": ["Impresión 3D", "Revisión visual", "Imágenes reales"],
+    "imagenesPeque": ["img/WhatsApp Image 2025-12-10 at 11.58.54 AM (3).jpeg"],
+    "imagenInterna": "img/WhatsApp Image 2025-12-10 at 11.58.54 AM (3).jpeg",
+    "destacado": false
+  },
+  {
+    "id": "p5",
+    "title": "Modelo WhatsApp 5",
+    "precio": 34000,
+    "descripcion": "Producto agregado desde imágenes de WhatsApp.",
+    "especificaciones": ["Impresión 3D", "Revisión visual", "Imágenes reales"],
+    "imagenesPeque": ["img/WhatsApp Image 2025-12-10 at 11.58.54 AM (4).jpeg"],
+    "imagenInterna": "img/WhatsApp Image 2025-12-10 at 11.58.54 AM (4).jpeg",
+    "destacado": false
+  },
+  {
+    "id": "p6",
+    "title": "Modelo WhatsApp 6",
+    "precio": 35000,
+    "descripcion": "Producto agregado desde imágenes de WhatsApp.",
+    "especificaciones": ["Impresión 3D", "Revisión visual", "Imágenes reales"],
+    "imagenesPeque": ["img/WhatsApp Image 2025-12-10 at 11.58.54 AM (5).jpeg"],
+    "imagenInterna": "img/WhatsApp Image 2025-12-10 at 11.58.54 AM (5).jpeg",
+    "destacado": true
+  },
+  {
+    "id": "p7",
+    "title": "Modelo WhatsApp 7",
+    "precio": 36000,
+    "descripcion": "Producto agregado desde imágenes de WhatsApp.",
+    "especificaciones": ["Impresión 3D", "Revisión visual", "Imágenes reales"],
+    "imagenesPeque": ["img/WhatsApp Image 2025-12-10 at 11.58.55 AM.jpeg"],
+    "imagenInterna": "img/WhatsApp Image 2025-12-10 at 11.58.55 AM.jpeg",
+    "destacado": true
+  }
+]

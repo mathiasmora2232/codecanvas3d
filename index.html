@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Página 3D | Inicio</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Página3D</a>
+      <button class="nav-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Menú">☰</button>
+      <nav id="main-nav" class="main-nav" aria-label="Principal">
+        <a class="active" href="index.html">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a href="contacto.html">Contacto</a>
+        <a href="solicitudes.html">Solicitudes</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <h1>Impresiones 3D a tu medida</h1>
+        <p>Diseñamos y fabricamos productos personalizados con impresión 3D para tu emprendimiento o proyecto.</p>
+        <a class="btn btn-primary" href="productos.html">Ver productos</a>
+      </div>
+      <div class="hero-media" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <main>
+    <section class="container section" id="destacados">
+      <h2 class="section-title">Productos Destacados</h2>
+      <div id="featured-grid" class="grid products-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Página3D</strong>
+        <p>Soluciones en impresión 3D: prototipos, piezas funcionales y merchandising.</p>
+      </div>
+      <div class="footer-contact">
+        <p>Email: <a href="mailto:contacto@pagina3d.test">contacto@pagina3d.test</a></p>
+        <p>Tel: +57 300 000 0000</p>
+      </div>
+      <div class="footer-copy">© 2025 Página3D. Todos los derechos reservados.</div>
+    </div>
+  </footer>
+
+  <!-- Modal de producto -->
+  <div id="product-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-dialog" role="document">
+      <button class="modal-close" aria-label="Cerrar" data-close>&times;</button>
+      <div class="modal-content">
+        <img id="modal-image" alt="Imagen del producto" src="" />
+        <div class="modal-details">
+          <h3 id="modal-title"></h3>
+          <p id="modal-descripcion"></p>
+          <ul id="modal-especificaciones" class="spec-list"></ul>
+          <div id="modal-precio" class="price"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/site.js" defer></script>
+</body>
+</html>

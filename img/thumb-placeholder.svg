@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Miniatura de producto">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#ff6b6b" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffb703" stop-opacity="0.85"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="#f6f8fc"/>
+  <rect x="24" y="24" width="752" height="552" rx="18" fill="url(#g)" opacity="0.25"/>
+  <g fill="#1f2530" font-family="Segoe UI, Roboto, Arial" text-anchor="middle">
+    <text x="400" y="300" font-size="32">Miniatura Producto</text>
+    <text x="400" y="340" font-size="18" fill="#606b85">800×600</text>
+  </g>
+</svg>
