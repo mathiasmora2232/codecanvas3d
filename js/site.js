@@ -1,18 +1,37 @@
 'use strict';
 
-const DATA_URL = 'data/products.json';
+const API_URL = 'api/products.php';
+const FALLBACK_JSON_URL = 'data/products.json';
 let PRODUCTS_CACHE = [];
 
 async function getProducts() {
   if (PRODUCTS_CACHE.length) return PRODUCTS_CACHE;
+
+  async function fetchJson(url) {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  // 1) Intentar API PHP (MySQL)
   try {
-    const res = await fetch(DATA_URL, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Error al cargar productos');
-    const data = await res.json();
+    const data = await fetchJson(API_URL);
+    if (Array.isArray(data) && data.length) {
+      PRODUCTS_CACHE = data;
+      return PRODUCTS_CACHE;
+    }
+    throw new Error('API sin datos');
+  } catch (apiErr) {
+    console.warn('Fallo API, usando JSON local:', apiErr?.message || apiErr);
+  }
+
+  // 2) Respaldo: JSON local
+  try {
+    const data = await fetchJson(FALLBACK_JSON_URL);
     PRODUCTS_CACHE = Array.isArray(data) ? data : [];
     return PRODUCTS_CACHE;
-  } catch (err) {
-    console.error(err);
+  } catch (jsonErr) {
+    console.error('También falló el JSON de respaldo:', jsonErr?.message || jsonErr);
     return [];
   }
 }
