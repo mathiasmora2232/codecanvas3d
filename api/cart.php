@@ -54,7 +54,8 @@ function &cartRef(): array {
 
 function cartSummary(): array {
     $cart = cartRef();
-    $items = $cart['items'];
+    // Reindexar para que JSON sea un array y no objeto cuando hay unsets
+    $items = array_values($cart['items']);
     $total = 0; $count = 0;
     foreach ($items as $it) { $total += (float)$it['precio'] * (int)$it['cantidad']; $count += (int)$it['cantidad']; }
     return ['items'=>$items, 'count'=>$count, 'total'=>$total];
@@ -88,7 +89,9 @@ try {
         }
         // buscar item
         foreach ($cart['items'] as &$it) {
-            $itKey = ($it['product_id'].'|'.strtolower((string)($it['variante'] ?? '')));
+            $pidField = isset($it['product_id']) ? 'product_id' : (isset($it['producto_id']) ? 'producto_id' : null);
+            $pidVal = $pidField ? (int)$it[$pidField] : null;
+            $itKey = ($pidVal.'|'.strtolower((string)($it['variante'] ?? '')));
             if ($itKey === $key) {
                 $newQty = min(MAX_PER_ITEM, (int)$it['cantidad'] + $qty);
                 if ($newQty === (int)$it['cantidad']) {
@@ -104,7 +107,7 @@ try {
         // nuevo item
         $cart['items'][] = [
             'id' => (count($cart['items']) ? (max(array_map(fn($x)=>$x['id'] ?? 0, $cart['items'])) + 1) : 1),
-            'producto_id' => $pid,
+            'product_id' => $pid,
             'variante' => $variant ?: null,
             'titulo' => $p['title'],
             'precio' => $p['precio'],
