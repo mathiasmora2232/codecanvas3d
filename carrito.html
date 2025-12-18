@@ -63,6 +63,8 @@
         const data = await res.json();
         document.getElementById('summary-count').textContent = `Artículos: ${data.count || 0}`;
         document.getElementById('summary-total').textContent = `Total: $${Number(data.total||0).toFixed(2)}`;
+        try { localStorage.setItem('cart_summary', JSON.stringify({ count: data.count||0, total: data.total||0 })); } catch {}
+        // No volver a emitir 'cart:updated' aquí para evitar bucles infinitos
       };
       document.addEventListener('cart:updated', updateSummary);
       document.getElementById('clear-cart')?.addEventListener('click', async ()=>{

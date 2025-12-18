@@ -9,6 +9,9 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 
+// Iniciar sesión para poder usar $_SESSION como almacenamiento del carrito
+session_start();
+
 
 const MAX_PER_ITEM = 10; // máximo por producto (mismo tipo)
 const MAX_TOTAL = 25;    // máximo total de artículos
@@ -155,4 +158,3 @@ try {
     http_response_code(500);
     echo json_encode(['error'=>'Error del servidor','detail'=>$e->getMessage()]);
 }
-        $del = $pdo->prepare('DELETE FROM carrito_items WHERE id=:id AND carrito_id=:c');

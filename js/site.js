@@ -122,6 +122,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   applySavedTheme();
   injectThemeSwitcher();
   injectAccountLink();
+  injectCartLink();
   initModal();
   initMobileNav();
   const featuredGrid = document.getElementById('featured-grid');
@@ -144,6 +145,9 @@ function initMobileNav() {
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.getElementById('main-nav');
   if (!toggle || !nav) return;
+  // Evitar doble inicialización (que provoca abrir/cerrar inmediato)
+  if (nav.dataset.inited === '1') return;
+  nav.dataset.inited = '1';
 
   function close() {
     nav.classList.remove('open');
@@ -172,6 +176,7 @@ function initMobileNav() {
 
 // THEME SWITCHER
 const THEME_KEY = 'site_theme';
+const CART_KEY = 'cart_summary';
 const THEMES = [
   { id: 'light-coral', name: 'Claro Coral', sw: ['#ff6b6b', '#ff9800'] },
   { id: 'light-mint', name: 'Claro Menta', sw: ['#2dd4bf', '#0ea5e9'] },
@@ -327,4 +332,71 @@ function injectAccountLink() {
     await updateHref();
     // dejar que el navegador navegue según href actualizado
   });
+}
+
+// Carrito: inyectar enlace con icono y contador
+function injectCartLink() {
+  const nav = document.getElementById('main-nav');
+  if (!nav || nav.querySelector('#cart-link')) return;
+
+  const a = document.createElement('a');
+  a.href = 'carrito.html';
+  a.id = 'cart-link';
+  a.setAttribute('title', 'Carrito');
+  a.style.position = 'relative';
+
+  const img = document.createElement('img');
+  img.id = 'cart-icon';
+  img.alt = 'Carrito';
+  img.style.width = '22px';
+  img.style.height = '22px';
+  img.style.display = 'block';
+  a.appendChild(img);
+
+  const badge = document.createElement('span');
+  badge.id = 'cart-badge';
+  badge.style.position = 'absolute';
+  badge.style.top = '-6px';
+  badge.style.right = '-8px';
+  badge.style.minWidth = '18px';
+  badge.style.height = '18px';
+  badge.style.borderRadius = '999px';
+  badge.style.padding = '0 4px';
+  badge.style.fontSize = '11px';
+  badge.style.lineHeight = '18px';
+  badge.style.textAlign = 'center';
+  badge.style.background = 'var(--accent)';
+  badge.style.color = '#fff';
+  badge.style.display = 'none';
+  a.appendChild(badge);
+
+  nav.appendChild(a);
+
+  function updateIcon() {
+    const theme = document.documentElement.getAttribute('data-theme') || 'light-coral';
+    const dark = theme.startsWith('dark-');
+    img.src = dark ? 'img/ico/carritoblanco.png' : 'img/ico/carritonegro.png';
+  }
+  function updateBadgeFromStorage() {
+    let s = null; try { s = JSON.parse(localStorage.getItem(CART_KEY) || 'null'); } catch {}
+    const cnt = Number(s?.count || 0);
+    if (cnt > 0) { badge.textContent = String(cnt); badge.style.display = 'inline-block'; }
+    else { badge.textContent = ''; badge.style.display = 'none'; }
+  }
+  async function refreshFromServer() {
+    try {
+      const res = await fetch('api/cart.php?action=get', { cache:'no-store', credentials:'same-origin' });
+      const data = await res.json();
+      if (res.ok) {
+        try { localStorage.setItem(CART_KEY, JSON.stringify({ count: data.count||0, total: data.total||0 })); } catch {}
+      }
+    } catch {}
+    updateBadgeFromStorage();
+  }
+
+  updateIcon();
+  updateBadgeFromStorage();
+  refreshFromServer();
+  document.addEventListener('themechange', updateIcon);
+  document.addEventListener('cart:updated', refreshFromServer);
 }

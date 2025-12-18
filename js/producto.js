@@ -116,7 +116,8 @@ async function renderProduct() {
         }
         cartMsg.textContent = 'Agregado al carrito';
         cartMsg.style.color = 'var(--accent)';
-        // Notificar a otros componentes (panel de carrito)
+        // Guardar resumen en localStorage y notificar
+        try { localStorage.setItem('cart_summary', JSON.stringify({ count: out.count||0, total: out.total||0 })); } catch {}
         try { document.dispatchEvent(new CustomEvent('cart:updated')); } catch {}
       } catch (err) {
         cartMsg.textContent = 'Error: ' + err.message;

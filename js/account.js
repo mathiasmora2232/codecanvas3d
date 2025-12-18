@@ -37,7 +37,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   const status = await authStatus();
   toggleAccountUI(status.user);
-  if (status.user) { await loadProfile(); await loadCities(); }
+  if (status.user) { await loadProfile(); await Promise.all([loadCities(), loadProvinces()]); }
 
   const logoutBtn = document.getElementById('logout-btn');
   logoutBtn?.addEventListener('click', async ()=>{
@@ -83,6 +83,30 @@ window.addEventListener('DOMContentLoaded', async () => {
     const sel = document.getElementById('af-ciudad');
     if (!sel) return;
     sel.innerHTML = '<option value="">--</option>' + list.map(c=>`<option value="${c.id}">${c.nombre}${c.provincia?(', '+c.provincia):''}</option>`).join('');
+
+    // Sincronizar provincia cuando cambia la ciudad
+    const provSel = document.getElementById('af-provincia');
+    if (provSel) {
+      sel.addEventListener('change', () => {
+        const cid = sel.value;
+        const city = list.find(c => String(c.id) === String(cid));
+        if (city && city.provincia) {
+          for (const opt of provSel.options) {
+            if (opt.value === city.provincia) { provSel.value = city.provincia; return; }
+          }
+        }
+      });
+    }
+  }
+
+  // Provincias (desde DB)
+  async function loadProvinces(){
+    const res = await fetch('api/profile.php?action=provinces', { credentials:'same-origin' });
+    if (!res.ok) return;
+    const list = await res.json(); // array de strings
+    const sel = document.getElementById('af-provincia');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">--</option>' + (Array.isArray(list)?list:[]).map(p=>`<option value="${p}">${p}</option>`).join('');
   }
 
   // Direcciones
@@ -102,9 +126,20 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('addr-form')?.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    const payload = { etiqueta: af_etiqueta.value, linea1: af_linea1.value, linea2: af_linea2.value, ciudad_id: af_ciudad.value||null, provincia: af_provincia.value, pais: af_pais.value, codigo_postal: af_cp.value };
-    await fetch('api/profile.php?action=addr_add', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload) });
-    (e.target).reset();
+    const f = e.target;
+    const payload = {
+      etiqueta: (document.getElementById('af-etiqueta')?.value || ''),
+      linea1: (document.getElementById('af-linea1')?.value || ''),
+      linea2: (document.getElementById('af-linea2')?.value || ''),
+      ciudad_id: (document.getElementById('af-ciudad')?.value || null),
+      provincia: (document.getElementById('af-provincia')?.value || ''),
+      pais: (document.getElementById('af-pais')?.value || ''),
+      codigo_postal: (document.getElementById('af-cp')?.value || '')
+    };
+    const resAdd = await fetch('api/profile.php?action=addr_add', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload) });
+    const outAdd = await resAdd.json();
+    if (outAdd?.error) { alert(outAdd.error); return; }
+    f.reset();
     const res = await fetch('api/profile.php?action=addr_list', { credentials:'same-origin' });
     const list = await res.json();
     renderAddresses(list);
@@ -127,9 +162,18 @@ window.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('card-form')?.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    const payload = { marca: cf_marca.value, titular: cf_titular.value, numero: cf_numero.value, exp_mes: cf_mm.value, exp_anio: cf_yy.value };
-    await fetch('api/profile.php?action=card_add', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload) });
-    (e.target).reset();
+    const f = e.target;
+    const payload = {
+      marca: (document.getElementById('cf-marca')?.value || ''),
+      titular: (document.getElementById('cf-titular')?.value || ''),
+      numero: (document.getElementById('cf-numero')?.value || ''),
+      exp_mes: (document.getElementById('cf-mm')?.value || ''),
+      exp_anio: (document.getElementById('cf-yy')?.value || '')
+    };
+    const resAdd = await fetch('api/profile.php?action=card_add', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload) });
+    const outAdd = await resAdd.json();
+    if (outAdd?.error) { alert(outAdd.error); return; }
+    f.reset();
     const res = await fetch('api/profile.php?action=card_list', { credentials:'same-origin' });
     const list = await res.json();
     renderCards(list);

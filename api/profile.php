@@ -62,6 +62,13 @@ try {
         exit;
     }
 
+    if ($action === 'provinces') {
+        $q = $pdo->query("SELECT DISTINCT provincia FROM ciudades WHERE provincia IS NOT NULL AND provincia<>'' ORDER BY provincia");
+        $rows = $q->fetchAll(PDO::FETCH_COLUMN, 0);
+        echo json_encode($rows);
+        exit;
+    }
+
     // Direcciones
     if ($action === 'addr_list') {
         $q = $pdo->prepare('SELECT d.id, d.etiqueta, d.linea1, d.linea2, d.ciudad_id, c.nombre AS ciudad, d.provincia, d.pais, d.codigo_postal, d.principal FROM direcciones d LEFT JOIN ciudades c ON c.id=d.ciudad_id WHERE d.user_id=:id ORDER BY d.principal DESC, d.id DESC');

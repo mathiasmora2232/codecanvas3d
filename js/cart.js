@@ -1,5 +1,6 @@
 // Panel de carrito para producto
 (function(){
+  const CART_KEY = 'cart_summary';
   const $ = (s)=>document.querySelector(s);
   const panel = document.getElementById('cart-panel');
   if (!panel) return;
@@ -17,6 +18,7 @@
       const res = await fetch('api/cart.php?action=get', { cache:'no-store', credentials:'same-origin' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error || 'Error al cargar carrito');
+      try { localStorage.setItem(CART_KEY, JSON.stringify({ count: data.count||0, total: data.total||0 })); } catch {}
       render(data.items || [], data.total || 0);
     } catch (e) {
       listEl.innerHTML = `<em style="color:var(--danger)">${e.message}</em>`;
@@ -70,7 +72,9 @@
       alert(out.detail || out.error || 'Error en carrito');
       return;
     }
+    try { localStorage.setItem(CART_KEY, JSON.stringify({ count: out.count||0, total: out.total||0 })); } catch {}
     render(out.items || [], out.total || 0);
+    try { document.dispatchEvent(new CustomEvent('cart:updated')); } catch {}
   }
 
   document.addEventListener('cart:updated', loadCart);
