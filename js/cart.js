@@ -1,5 +1,6 @@
 // Panel de carrito para producto
 (function(){
+  function safeSrc(u){ try { if (!u) return 'img/thumb-placeholder.svg'; const s=String(u).replace(/\\/g,'/'); return encodeURI(s); } catch { return 'img/thumb-placeholder.svg'; } }
   const CART_KEY = 'cart_summary';
   const $ = (s)=>document.querySelector(s);
   const panel = document.getElementById('cart-panel');
@@ -34,7 +35,7 @@
     }
     listEl.innerHTML = items.map(it=>`
       <div class="cart-row" data-id="${it.id}" style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border)">
-        ${it.imagen ? `<img src="${it.imagen}" alt="${it.titulo}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">` : ''}
+        ${it.imagen ? `<img src="${safeSrc(it.imagen)}" alt="${it.titulo}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" onerror="this.src='img/thumb-placeholder.svg'">` : ''}
         <div style="flex:1">
           <div><strong>${it.titulo}</strong> ${it.variante ? `• ${it.variante}` : ''}</div>
           <div style="color:var(--muted)">$${Number(it.precio).toFixed(2)}</div>

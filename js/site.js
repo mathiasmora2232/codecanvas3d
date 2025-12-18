@@ -4,6 +4,15 @@ const API_URL = 'api/products.php';
 const FALLBACK_JSON_URL = 'data/products.json';
 let PRODUCTS_CACHE = [];
 
+// Normaliza rutas de imagen para soportar espacios y barras invertidas
+function safeSrc(u, placeholder='img/thumb-placeholder.svg') {
+  try {
+    if (!u) return placeholder;
+    const s = String(u).replace(/\\/g, '/');
+    return encodeURI(s);
+  } catch { return placeholder; }
+}
+
 async function getProducts() {
   if (PRODUCTS_CACHE.length) return PRODUCTS_CACHE;
 
@@ -45,10 +54,10 @@ const money = (n) => {
 };
 
 function productCard(p) {
-  const thumb = (p.imagenesPeque && p.imagenesPeque[0]) || 'img/thumb-placeholder.svg';
+  const thumb = safeSrc((p.imagenesPeque && p.imagenesPeque[0]) || null);
   return `
     <article class="product-card" data-id="${p.id}">
-      <img class="product-media" src="${thumb}" alt="${p.title}" loading="lazy"/>
+      <img class="product-media" src="${thumb}" alt="${p.title}" loading="lazy" onerror="this.src='img/thumb-placeholder.svg'"/>
       <div class="product-body">
         <h3 class="product-title">${p.title}</h3>
         <div class="price">${money(p.precio)}</div>

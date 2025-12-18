@@ -1,5 +1,13 @@
 'use strict';
 
+function safeSrc(u, placeholder){
+  try {
+    if (!u) return placeholder || 'img/large-placeholder.svg';
+    const s = String(u).replace(/\\/g,'/');
+    return encodeURI(s);
+  } catch { return placeholder || 'img/large-placeholder.svg'; }
+}
+
 function getIdFromQuery() {
   const params = new URLSearchParams(window.location.search);
   return params.get('id');
@@ -11,12 +19,13 @@ function setThumbs(thumbnails, mainImgEl) {
   thumbsWrap.innerHTML = '';
   const imgs = Array.isArray(thumbnails) ? thumbnails : [];
   imgs.forEach((src) => {
+    const url = safeSrc(src, 'img/thumb-placeholder.svg');
     const btn = document.createElement('button');
     btn.className = 'thumb';
     btn.type = 'button';
-    btn.innerHTML = `<img alt="Miniatura" src="${src}">`;
+    btn.innerHTML = `<img alt="Miniatura" src="${url}" loading="lazy" onerror="this.src='img/thumb-placeholder.svg'">`;
     btn.addEventListener('click', () => {
-      if (mainImgEl) mainImgEl.src = src;
+      if (mainImgEl) mainImgEl.src = url;
     });
     thumbsWrap.appendChild(btn);
   });
@@ -86,8 +95,10 @@ async function renderProduct() {
   document.title = `Página 3D | ${p.title}`;
   titleEl.textContent = p.title || '';
   priceEl.textContent = money(p.precio);
-  imgEl.src = p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]) || 'img/large-placeholder.svg';
+  imgEl.src = safeSrc(p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]), 'img/large-placeholder.svg');
   imgEl.alt = p.title || 'Producto';
+  imgEl.loading = 'eager';
+  imgEl.onerror = function(){ this.src = 'img/large-placeholder.svg'; };
   descEl.textContent = p.descripcion || '';
 
   if (Array.isArray(p.especificaciones)) {
