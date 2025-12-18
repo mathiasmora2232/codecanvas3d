@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Página 3D | Carrito</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Página3D</a>
+      <button class="nav-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Menú">☰</button>
+      <nav id="main-nav" class="main-nav" aria-label="Principal">
+        <a href="index.html">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a href="contacto.html">Contacto</a>
+        <a href="solicitudes.html">Solicitudes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="container section">
+      <h1 class="section-title">Carrito</h1>
+      <div id="cart-page" class="grid" style="grid-template-columns: 1.2fr .8fr; gap: 20px; align-items: start;">
+        <div>
+          <div id="cart-panel" class="form" style="max-width: 720px"></div>
+        </div>
+        <aside class="card" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px;">
+          <h3>Resumen</h3>
+          <div id="summary-count"></div>
+          <div id="summary-total" style="font-weight:700; color: var(--accent);"></div>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button id="clear-cart" class="btn">Vaciar</button>
+            <a class="btn btn-primary" href="login.html">Continuar</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Página3D</strong>
+        <p>Soluciones en impresión 3D: prototipos, piezas funcionales y merchandising.</p>
+      </div>
+      <div class="footer-contact">
+        <p>Email: <a href="mailto:mathiasmoraflores30@gmail.com">mathiasmoraflores30@gmail.com</a></p>
+        <p>Tel: +593 961788696</p>
+      </div>
+      <div class="footer-copy">© 2025 Página3D. Todos los derechos reservados.</div>
+    </div>
+  </footer>
+
+  <script src="js/site.js" defer></script>
+  <script src="js/cart.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const updateSummary = async () => {
+        const res = await fetch('api/cart.php?action=get', { cache:'no-store', credentials:'same-origin' });
+        const data = await res.json();
+        document.getElementById('summary-count').textContent = `Artículos: ${data.count || 0}`;
+        document.getElementById('summary-total').textContent = `Total: $${Number(data.total||0).toFixed(2)}`;
+      };
+      document.addEventListener('cart:updated', updateSummary);
+      document.getElementById('clear-cart')?.addEventListener('click', async ()=>{
+        const res = await fetch('api/cart.php', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify({ action:'clear' }) });
+        await res.json();
+        updateSummary();
+      });
+      updateSummary();
+    });
+  </script>
+</body>
+</html>

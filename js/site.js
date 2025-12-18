@@ -121,6 +121,7 @@ function closeModal() {
 window.addEventListener('DOMContentLoaded', async () => {
   applySavedTheme();
   injectThemeSwitcher();
+  injectAccountLink();
   initModal();
   initMobileNav();
   const featuredGrid = document.getElementById('featured-grid');
@@ -188,6 +189,8 @@ function applyTheme(themeId) {
   if (!themeId) return;
   document.documentElement.setAttribute('data-theme', themeId);
   try { localStorage.setItem(THEME_KEY, themeId); } catch {}
+  // Avisar a otros scripts (p.ej., para icono de cuenta)
+  try { document.dispatchEvent(new CustomEvent('themechange', { detail: { themeId } })); } catch {}
 }
 
 function applySavedTheme() {
@@ -205,6 +208,8 @@ function injectThemeSwitcher() {
   const header = document.querySelector('.site-header .header-inner');
   const nav = header?.querySelector('.main-nav');
   if (!header || !nav) return;
+  // Evitar duplicado si ya existe uno
+  if (nav.querySelector('.theme-toggle.icon')) return;
 
   const wrap = document.createElement('div');
   wrap.style.position = 'relative';
@@ -215,7 +220,12 @@ function injectThemeSwitcher() {
   btn.setAttribute('aria-haspopup', 'menu');
   btn.setAttribute('aria-expanded', 'false');
   btn.setAttribute('title', 'Cambiar tema');
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a5 5 0 0 1 5 5 3 3 0 0 0 3 3 5 5 0 1 1-5 5 3 3 0 0 0-3-3 5 5 0 0 1 0-10Z"/><circle cx="6.5" cy="12.5" r="1.5"/><circle cx="9.5" cy="9.5" r="1.5"/><circle cx="6.5" cy="6.5" r="1.5"/></svg>`;
+  const imgIcon = document.createElement('img');
+  imgIcon.src = 'img/ico/circulo-de-color.png';
+  imgIcon.alt = 'Tema';
+  imgIcon.style.width = '20px';
+  imgIcon.style.height = '20px';
+  btn.appendChild(imgIcon);
 
   const menu = document.createElement('div');
   menu.className = 'theme-menu';
@@ -274,4 +284,47 @@ function injectThemeSwitcher() {
   wrap.appendChild(menu);
   // Insertar al inicio del nav, cerca de "Inicio"
   nav.prepend(wrap);
+}
+
+// Cuenta: inyectar enlace con icono que cambia según tema
+function injectAccountLink() {
+  const nav = document.getElementById('main-nav');
+  if (!nav || nav.querySelector('#account-link')) return;
+  const a = document.createElement('a');
+  a.href = 'login.html';
+  a.id = 'account-link';
+  a.setAttribute('title', 'Mi cuenta');
+  const img = document.createElement('img');
+  img.id = 'account-icon';
+  img.alt = 'Cuenta';
+  img.style.width = '22px';
+  img.style.height = '22px';
+  img.style.display = 'block';
+  a.appendChild(img);
+  nav.appendChild(a);
+
+  function updateIcon() {
+    const theme = document.documentElement.getAttribute('data-theme') || 'light-coral';
+    const dark = theme.startsWith('dark-');
+    img.src = dark ? 'img/ico/usuariodark.png' : 'img/ico/usuario.png';
+  }
+  async function updateHref() {
+    try {
+      const res = await fetch('api/auth.php?action=status', { cache: 'no-store', credentials: 'same-origin' });
+      if (!res.ok) { a.href = 'login.html'; return; }
+      const data = await res.json();
+      a.href = data && data.user ? 'account.html' : 'login.html';
+    } catch {
+      a.href = 'login.html';
+    }
+  }
+  updateIcon();
+  updateHref();
+  document.addEventListener('themechange', updateIcon);
+
+  // Revalidar destino al hacer click (por si cambió la sesión)
+  a.addEventListener('click', async (e) => {
+    await updateHref();
+    // dejar que el navegador navegue según href actualizado
+  });
 }
