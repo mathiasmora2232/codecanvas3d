@@ -26,6 +26,11 @@ try {
         $u->execute([':id'=>$uid]);
         $user = $u->fetch(PDO::FETCH_ASSOC);
 
+        // Perfil extendido (clientes)
+        $cli = $pdo->prepare('SELECT id, user_id, nombre, apellido, documento, genero, fecha_nacimiento, ciudad_id FROM clientes WHERE user_id=:id');
+        $cli->execute([':id'=>$uid]);
+        $cliente = $cli->fetch(PDO::FETCH_ASSOC) ?: null;
+
         $dir = $pdo->prepare('SELECT d.id, d.etiqueta, d.linea1, d.linea2, d.ciudad_id, c.nombre AS ciudad, d.provincia, d.pais, d.codigo_postal, d.principal FROM direcciones d LEFT JOIN ciudades c ON c.id=d.ciudad_id WHERE d.user_id=:id ORDER BY d.principal DESC, d.id DESC');
         $dir->execute([':id'=>$uid]);
         $direcciones = $dir->fetchAll(PDO::FETCH_ASSOC);
@@ -38,7 +43,7 @@ try {
         $card->execute([':id'=>$uid]);
         $tarjetas = $card->fetchAll(PDO::FETCH_ASSOC);
 
-        echo json_encode(['user'=>$user, 'direcciones'=>$direcciones, 'telefonos'=>$telefonos, 'tarjetas'=>$tarjetas]);
+        echo json_encode(['user'=>$user, 'cliente'=>$cliente, 'direcciones'=>$direcciones, 'telefonos'=>$telefonos, 'tarjetas'=>$tarjetas]);
         exit;
     }
 
@@ -52,6 +57,17 @@ try {
         if ($email==='' || !filter_var($email, FILTER_VALIDATE_EMAIL)) { http_response_code(400); echo json_encode(['error'=>'Email inválido']); exit; }
         $q = $pdo->prepare('UPDATE usuarios SET nombre=:n, usuario=:u, email=:e WHERE id=:id');
         $q->execute([':n'=>$nombre, ':u'=>$usuario, ':e'=>$email, ':id'=>$uid]);
+
+        // Campos extendidos (opcionales)
+        $apellido = trim((string)($in['apellido'] ?? ''));
+        $documento= trim((string)($in['documento'] ?? ''));
+        $genero   = ($in['genero'] ?? null);
+        $fnac     = ($in['fecha_nacimiento'] ?? null);
+        $ciudadId = ($in['ciudad_id'] ?? null);
+        $stmt = $pdo->prepare('INSERT INTO clientes (user_id, nombre, apellido, documento, genero, fecha_nacimiento, ciudad_id, updated_at)
+                               VALUES (:uid, :n, :ap, :doc, :gen, :fn, :cid, NOW())
+                               ON DUPLICATE KEY UPDATE nombre=VALUES(nombre), apellido=VALUES(apellido), documento=VALUES(documento), genero=VALUES(genero), fecha_nacimiento=VALUES(fecha_nacimiento), ciudad_id=VALUES(ciudad_id), updated_at=NOW()');
+        $stmt->execute([':uid'=>$uid, ':n'=>$nombre ?: null, ':ap'=>$apellido ?: null, ':doc'=>$documento ?: null, ':gen'=>$genero ?: null, ':fn'=>$fnac ?: null, ':cid'=>$ciudadId ?: null]);
         echo json_encode(['ok'=>true]);
         exit;
     }

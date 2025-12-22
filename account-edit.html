@@ -41,17 +41,17 @@
 
           <div id="account-user" class="account-card hidden">
             <form class="form" id="profile-form" style="max-width:720px;">
-              <div class="form-row">
-                <label for="pf-nombre">Nombre</label>
-                <input id="pf-nombre" type="text" required />
-              </div>
-              <div class="form-row">
-                <label for="pf-usuario">Usuario</label>
-                <input id="pf-usuario" type="text" required />
-              </div>
-              <div class="form-row">
-                <label for="pf-email">Email</label>
-                <input id="pf-email" type="email" required />
+              <div class="form-row"><label for="pf-nombre">Nombre</label><input id="pf-nombre" type="text" required /></div>
+              <div class="form-row"><label for="pf-apellido">Apellido</label><input id="pf-apellido" type="text" /></div>
+              <div class="form-row"><label for="pf-usuario">Usuario</label><input id="pf-usuario" type="text" required /></div>
+              <div class="form-row"><label for="pf-email">Email</label><input id="pf-email" type="email" required /></div>
+              <div class="form-row"><label for="pf-doc">Documento</label><input id="pf-doc" type="text" /></div>
+              <div class="form-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <div><label for="pf-genero">Género</label>
+                  <select id="pf-genero"><option value="">--</option><option value="M">Masculino</option><option value="F">Femenino</option><option value="O">Otro</option></select>
+                </div>
+                <div><label for="pf-fnac">Nacimiento</label><input id="pf-fnac" type="date" /></div>
+                <div><label for="pf-ciudad">Ciudad</label><select id="pf-ciudad"></select></div>
               </div>
               <button class="btn btn-primary" type="submit">Guardar cambios</button>
               <a class="btn" href="account.html">Cancelar</a>
