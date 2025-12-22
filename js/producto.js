@@ -95,10 +95,16 @@ async function renderProduct() {
   document.title = `Página 3D | ${p.title}`;
   titleEl.textContent = p.title || '';
   priceEl.textContent = money(p.precio);
-  imgEl.src = safeSrc(p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]), 'img/large-placeholder.svg');
+  const primary = safeSrc(p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]), 'img/large-placeholder.svg');
+  imgEl.src = primary;
   imgEl.alt = p.title || 'Producto';
   imgEl.loading = 'eager';
-  imgEl.onerror = function(){ this.src = 'img/large-placeholder.svg'; };
+  imgEl.onerror = function(){
+    const att = parseInt(this.getAttribute('data-attempt')||'0',10);
+    if(att === 0){ this.setAttribute('data-attempt','1'); this.src = (primary||'').replace(/%20/g,' '); return; }
+    if(att === 1){ this.setAttribute('data-attempt','2'); this.src = (primary||'').replace(/ /g,'%20'); return; }
+    this.src = 'img/large-placeholder.svg';
+  };
   descEl.textContent = p.descripcion || '';
 
   if (Array.isArray(p.especificaciones)) {

@@ -107,7 +107,7 @@ function initModal() {
 function openProductModal(p) {
   if (!modalEl) return;
   modalTitle.textContent = p.title || '';
-  modalImg.src = p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]) || 'img/large-placeholder.svg';
+  modalImg.src = safeSrc(p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]), 'img/large-placeholder.svg');
   modalImg.alt = p.title || 'Producto';
   modalDesc.textContent = p.descripcion || '';
   if (Array.isArray(p.especificaciones)) {
