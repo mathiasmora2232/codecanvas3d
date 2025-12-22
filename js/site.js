@@ -132,6 +132,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   injectThemeSwitcher();
   injectAccountLink();
   injectCartLink();
+  injectAccountSidebar();
   initModal();
   initMobileNav();
   const featuredGrid = document.getElementById('featured-grid');
@@ -408,4 +409,38 @@ function injectCartLink() {
   refreshFromServer();
   document.addEventListener('themechange', updateIcon);
   document.addEventListener('cart:updated', refreshFromServer);
+}
+
+// Sidebar de cuenta unificada (con Admin si corresponde)
+async function injectAccountSidebar() {
+  const nav = document.querySelector('.account-sidebar .account-nav');
+  if (!nav) return;
+
+  let user = null;
+  try {
+    const r = await fetch('api/auth.php?action=status', { cache: 'no-store', credentials: 'same-origin' });
+    const j = await r.json(); user = j?.user || null;
+  } catch {}
+
+  const page = (location.pathname.split('/').pop() || '').toLowerCase();
+  const isActive = (href) => page === href.toLowerCase();
+
+  const items = [
+    { href: 'account.html', text: 'Mi cuenta', active: isActive('account.html') },
+    { href: 'pedidos.html', text: 'Mis pedidos', active: isActive('pedidos.html') },
+    { href: '#', text: 'Favoritos', active: isActive('favoritos.html'), disabled: true },
+    { href: 'direcciones.html', text: 'Libreta de direcciones', active: isActive('direcciones.html') || isActive('direccion-nueva.html') }
+  ];
+  if (user && user.role === 'admin') {
+    items.push({ href: 'admin.html', text: 'Admin', active: isActive('admin.html') });
+  }
+
+  nav.innerHTML = items.map(it => {
+    const a = document.createElement('a');
+    a.href = it.href;
+    a.textContent = it.text;
+    if (it.active) a.classList.add('active');
+    if (it.disabled) a.setAttribute('aria-disabled', 'true');
+    return a.outerHTML;
+  }).join('');
 }

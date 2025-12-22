@@ -3,7 +3,8 @@
   function toggle(u){ const g=document.getElementById('account-guest'); const a=document.getElementById('account-user'); if(u){ g.classList.add('hidden'); a.classList.remove('hidden'); } else { g.classList.remove('hidden'); a.classList.add('hidden'); } }
   async function loadCities(){ const r=await fetch('api/profile.php?action=cities',{credentials:'same-origin'}); if(!r.ok) return []; return r.json(); }
   async function loadProvinces(){ const r=await fetch('api/profile.php?action=provinces',{credentials:'same-origin'}); if(!r.ok) return []; return r.json(); }
-  async function loadIfEditing(){ const params = new URLSearchParams(location.search); const id = params.get('id'); if(!id) return; const r = await fetch('api/profile.php?action=addr_list',{credentials:'same-origin'}); const list = await r.json(); const d = list.find(x=>String(x.id)===String(id)); if(!d) return; document.getElementById('af-etiqueta').value=d.etiqueta||''; document.getElementById('af-linea1').value=d.linea1||''; document.getElementById('af-linea2').value=d.linea2||''; document.getElementById('af-ciudad').value=d.ciudad_id||''; document.getElementById('af-provincia').value=d.provincia||''; document.getElementById('af-pais').value=d.pais||''; document.getElementById('af-cp').value=d.codigo_postal||''; }
+  function getEditingId(){ const params=new URLSearchParams(location.search); return params.get('id'); }
+  async function loadIfEditing(){ const id = getEditingId(); if(!id) return; const r = await fetch('api/profile.php?action=addr_list',{credentials:'same-origin'}); const list = await r.json(); const d = list.find(x=>String(x.id)===String(id)); if(!d) return; document.title='Página 3D | Editar dirección'; const h=document.querySelector('.section-title'); if(h) h.textContent='Editar dirección'; const btn=document.querySelector('#addr-form button[type="submit"]'); if(btn) btn.textContent='Guardar cambios'; document.getElementById('af-etiqueta').value=d.etiqueta||''; document.getElementById('af-linea1').value=d.linea1||''; document.getElementById('af-linea2').value=d.linea2||''; document.getElementById('af-ciudad').value=d.ciudad_id||''; document.getElementById('af-provincia').value=d.provincia||''; document.getElementById('af-pais').value=d.pais||''; document.getElementById('af-cp').value=d.codigo_postal||''; }
   document.addEventListener('DOMContentLoaded', async ()=>{
     applySavedTheme(); injectThemeSwitcher(); initMobileNav();
     const st = await status(); toggle(st.user); if(!st.user) return;
@@ -15,7 +16,11 @@
     document.getElementById('addr-form')?.addEventListener('submit', async (e)=>{
       e.preventDefault();
       const payload={ etiqueta:document.getElementById('af-etiqueta').value||'', linea1:document.getElementById('af-linea1').value||'', linea2:document.getElementById('af-linea2').value||'', ciudad_id:document.getElementById('af-ciudad').value||null, provincia:document.getElementById('af-provincia').value||'', pais:document.getElementById('af-pais').value||'', codigo_postal:document.getElementById('af-cp').value||'' };
-      const r = await fetch('api/profile.php?action=addr_add',{method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(payload)});
+      const id = getEditingId();
+      let url='api/profile.php?action=addr_add';
+      let body = payload;
+      if(id){ url='api/profile.php?action=addr_update'; body = { id: Number(id), ...payload }; }
+      const r = await fetch(url,{method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify(body)});
       const out = await r.json(); if(out.error){ alert(out.error); return; }
       alert('Dirección guardada'); window.location.href='direcciones.html';
     });

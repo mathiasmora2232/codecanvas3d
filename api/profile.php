@@ -109,6 +109,27 @@ try {
         echo json_encode(['ok'=>true, 'id'=>$pdo->lastInsertId()]);
         exit;
     }
+    if ($action === 'addr_update') {
+        $in = inputJSON();
+        $id = (int)($in['id'] ?? 0);
+        if ($id <= 0) { http_response_code(400); echo json_encode(['error'=>'ID requerido']); exit; }
+        $stmt = $pdo->prepare('UPDATE direcciones SET etiqueta=:et, linea1=:l1, linea2=:l2, ciudad_id=:cid, provincia=:prov, pais=:pais, codigo_postal=:cp, principal=:pri WHERE id=:id AND user_id=:uid');
+        $stmt->execute([
+            ':et'=>($in['etiqueta'] ?? null),
+            ':l1'=>($in['linea1'] ?? ''),
+            ':l2'=>($in['linea2'] ?? null),
+            ':cid'=>($in['ciudad_id'] ?? null),
+            ':prov'=>($in['provincia'] ?? null),
+            ':pais'=>($in['pais'] ?? null),
+            ':cp'=>($in['codigo_postal'] ?? null),
+            ':pri'=>(!empty($in['principal'])?1:0),
+            ':id'=>$id,
+            ':uid'=>$uid,
+        ]);
+        if ($stmt->rowCount() === 0) { http_response_code(404); echo json_encode(['error'=>'Dirección no encontrada']); exit; }
+        echo json_encode(['ok'=>true]);
+        exit;
+    }
     if ($action === 'addr_del') {
         $id = (int)($_GET['id'] ?? 0);
         $stmt = $pdo->prepare('DELETE FROM direcciones WHERE id=:id AND user_id=:uid');
