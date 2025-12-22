@@ -4,18 +4,29 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin | Página 3D</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20251222" />
   <style>
     .admin-wrap{display:grid;grid-template-columns:220px 1fr;gap:16px}
-    .admin-nav a{display:block;padding:8px 10px;border-radius:8px;margin:4px 0;color:var(--text);text-decoration:none;border:1px solid var(--border)}
+    .admin-nav a{display:block;padding:10px 12px;border-radius:10px;margin:6px 0;color:var(--text);text-decoration:none;border:1px solid var(--border);transition:all .15s}
+    .admin-nav a:hover{border-color:var(--accent);color:var(--accent)}
     .admin-nav a.active{background:var(--card);border-color:var(--accent);color:var(--accent)}
-    .table{width:100%;border-collapse:collapse}
-    .table th,.table td{border-bottom:1px solid var(--border);padding:6px 8px;text-align:left}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;margin:10px 0}
+    .table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    .table th{background:var(--card);}
+    .table th,.table td{border-bottom:1px solid var(--border);padding:8px 10px;text-align:left}
     .pill{display:inline-block;padding:2px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px}
+    .btn-small{font-size:12px;padding:4px 8px;border-radius:8px}
+    .btn-danger{border-color:var(--danger);color:var(--danger)}
+    .btn-secondary{border-color:var(--border);color:var(--text)}
     .row{display:flex;gap:8px;align-items:center}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .thumbs{display:flex;flex-wrap:wrap;gap:8px}
     .thumbs img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+    dialog{border:none;border-radius:12px;padding:0}
+    dialog::backdrop{background:rgba(0,0,0,.35)}
+    #frm-product{padding:16px}
+    #frm-product label{display:block;margin-bottom:8px}
+    #frm-product input,#frm-product textarea,#frm-product select{width:100%}
     .hidden{display:none}
   </style>
   <script>window.ADMIN=true;</script>
@@ -35,6 +46,10 @@
 
   <main class="container section">
     <h1 class="section-title">Panel de Administración</h1>
+    <div class="toolbar">
+      <a class="btn" href="account.html">← Regresar a Mi cuenta</a>
+      <span></span>
+    </div>
     <div id="admin-note" class="account-note"></div>
     <div class="admin-wrap">
       <aside class="admin-nav">
@@ -54,13 +69,13 @@
         </div>
 
         <div id="view-products" class="hidden">
-          <div class="row" style="justify-content:space-between;margin-bottom:8px">
+          <div class="toolbar">
             <h3>Productos</h3>
-            <button id="btn-new" class="btn btn-primary">Nuevo producto</button>
+            <button id="btn-new" class="btn btn-primary">+ Nuevo producto</button>
           </div>
           <table class="table" id="tbl-products"><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Activo</th><th>Stock</th><th>Oferta%</th><th></th></tr></thead><tbody></tbody></table>
           <dialog id="dlg-product">
-            <form method="dialog" id="frm-product" style="min-width:640px">
+            <form id="frm-product" style="min-width:640px">
               <h3 id="dlg-title">Producto</h3>
               <div class="grid2">
                 <div>
@@ -82,9 +97,9 @@
                   </div>
                 </div>
               </div>
-              <menu style="margin-top:10px">
-                <button value="cancel">Cancelar</button>
-                <button id="btn-save" value="default" class="btn btn-primary">Guardar</button>
+              <menu style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end">
+                <button id="btn-cancel" type="button" class="btn btn-secondary">Cancelar</button>
+                <button id="btn-save" class="btn btn-primary">Guardar</button>
               </menu>
             </form>
           </dialog>
@@ -110,7 +125,7 @@
     </div>
   </footer>
 
-  <script src="js/site.js" defer></script>
-  <script src="js/admin.js" defer></script>
+  <script src="js/site.js?v=20251222" defer></script>
+  <script src="js/admin.js?v=20251222" defer></script>
 </body>
 <html>

@@ -37,7 +37,7 @@
   async function loadStats(){ try{ const s=await api('stats', null, {method:'GET'}); $('#st-products').textContent=s.productos; $('#st-orders').textContent=s.pedidos; $('#st-users').textContent=s.usuarios; $('#st-sales').textContent = Number(s.ventas||0).toLocaleString('es-EC',{style:'currency',currency:'USD'}); } catch(e){}}
 
   // Productos
-  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.nombre}</td><td>$${Number(r.precio).toFixed(2)}</td><td>${r.activo?'<span class="pill">Sí</span>':'<span class="pill">No</span>'}</td><td>${r.stock||0}</td><td>${r.oferta_pct||0}</td><td><button data-edit="${r.id}">Editar</button> <button data-del="${r.id}">Desactivar</button></td></tr>`).join(''); }
+  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.nombre}</td><td>$${Number(r.precio).toFixed(2)}</td><td>${r.activo?'<span class="pill">Sí</span>':'<span class="pill">No</span>'}</td><td>${r.stock||0}</td><td>${r.oferta_pct||0}</td><td><button class="btn btn-small" data-edit="${r.id}">✏️ Editar</button> <button class="btn btn-small btn-danger" data-del="${r.id}">🗑 Desactivar</button></td></tr>`).join(''); }
   async function loadProducts(){ try{ const list=await api('products_list', null, {method:'GET'}); renderProducts(list); } catch(e){}}
   function openProductDialog(data){
     const dlg = $('#dlg-product'); const form=$('#frm-product'); dlg.returnValue='';
@@ -94,7 +94,7 @@
   async function loadOrders(){ try{ const list=await api('orders_list', null, {method:'GET'}); renderOrders(list); } catch(e){} }
 
   // Usuarios
-  function renderUsers(rows){ const tb=$('#tbl-users tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.nombre}</td><td>${r.usuario||''}</td><td>${r.email}</td><td>${r.role}</td><td>${r.role==='admin'?'':'<button data-mkadmin="'+r.id+'">Hacer admin</button>'}</td></tr>`).join(''); }
+  function renderUsers(rows){ const tb=$('#tbl-users tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.nombre}</td><td>${r.usuario||''}</td><td>${r.email}</td><td>${r.role}</td><td>${r.role==='admin'?'':'<button class="btn btn-small" data-mkadmin="'+r.id+'">⭐ Hacer admin</button>'}</td></tr>`).join(''); }
   async function loadUsers(){ try{ const list=await api('users_list', null, {method:'GET'}); renderUsers(list); } catch(e){} }
 
   document.addEventListener('DOMContentLoaded', async ()=>{
@@ -115,6 +115,7 @@
       if(btn.hasAttribute('data-del')){ const id=Number(btn.getAttribute('data-del')); await delProduct(id); }
     });
     $('#frm-product')?.addEventListener('submit', async (e)=>{ e.preventDefault(); try{ await saveProduct(); } catch(err){ alert(err.message); } });
+    $('#btn-cancel')?.addEventListener('click', ()=>{ $('#dlg-product')?.close(); });
     $('#up-main')?.addEventListener('change', async (e)=>{ const f=e.target.files?.[0]; if(!f) return; try{ const p=await uploadFile(f); $('#p-img-main').value=p; } catch(err){ alert(err.message); } });
     $('#up-thumbs')?.addEventListener('change', async (e)=>{ const files=Array.from(e.target.files||[]); for(const f of files){ try{ const p=await uploadFile(f); addThumbPath(p); } catch(err){ alert(err.message); } } });
 
