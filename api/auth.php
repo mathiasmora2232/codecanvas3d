@@ -12,21 +12,25 @@ session_set_cookie_params([
 session_start();
 
 function ensureUsersTable(): void {
+    $pdo = pdo();
     $sql = "CREATE TABLE IF NOT EXISTS usuarios (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(200) NOT NULL,
         usuario VARCHAR(60) NULL,
         email VARCHAR(200) NOT NULL UNIQUE,
         password_hash VARCHAR(255) NOT NULL,
+        role ENUM('user','admin') NOT NULL DEFAULT 'user',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uk_usuario (usuario)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-    pdo()->exec($sql);
+    $pdo->exec($sql);
+    // Asegurar columna role si la tabla ya existía sin ella
+    try { $pdo->exec("ALTER TABLE usuarios ADD COLUMN role ENUM('user','admin') NOT NULL DEFAULT 'user'"); } catch (Throwable $e) { /* ya existe */ }
 }
 
 function currentUser() {
     if (!isset($_SESSION['uid'])) return null;
-    $stmt = pdo()->prepare('SELECT id, nombre, usuario, email, created_at FROM usuarios WHERE id = :id');
+    $stmt = pdo()->prepare('SELECT id, nombre, usuario, email, role, created_at FROM usuarios WHERE id = :id');
     $stmt->execute([':id' => $_SESSION['uid']]);
     return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
@@ -98,7 +102,7 @@ try {
 
         try {
             $hash = password_hash($pass, PASSWORD_DEFAULT);
-            $stmt = pdo()->prepare('INSERT INTO usuarios (nombre, usuario, email, password_hash) VALUES (:n,:u,:e,:p)');
+            $stmt = pdo()->prepare('INSERT INTO usuarios (nombre, usuario, email, password_hash, role) VALUES (:n,:u,:e,:p,\'user\')');
             $stmt->execute([':n'=>$nombre, ':u'=>$usuario, ':e'=>$email, ':p'=>$hash]);
             echo json_encode(['ok'=>true]);
         } catch (PDOException $ex) {
@@ -119,9 +123,9 @@ try {
         $pass  = (string)($data['password'] ?? '');
         // Permitir login por email o usuario
         if (strpos($login, '@') !== false) {
-            $stmt = pdo()->prepare('SELECT id, password_hash, nombre, usuario, email, created_at FROM usuarios WHERE email = :v');
+            $stmt = pdo()->prepare('SELECT id, password_hash, nombre, usuario, email, role, created_at FROM usuarios WHERE email = :v');
         } else {
-            $stmt = pdo()->prepare('SELECT id, password_hash, nombre, usuario, email, created_at FROM usuarios WHERE usuario = :v');
+            $stmt = pdo()->prepare('SELECT id, password_hash, nombre, usuario, email, role, created_at FROM usuarios WHERE usuario = :v');
         }
         $stmt->execute([':v' => $login]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -136,7 +140,7 @@ try {
             exit;
         }
         $_SESSION['uid'] = (int)$row['id'];
-        echo json_encode(['ok'=>true, 'user' => ['id'=>$row['id'], 'nombre'=>$row['nombre'], 'usuario'=>$row['usuario'], 'email'=>$row['email'], 'created_at'=>$row['created_at']]]);
+        echo json_encode(['ok'=>true, 'user' => ['id'=>$row['id'], 'nombre'=>$row['nombre'], 'usuario'=>$row['usuario'], 'email'=>$row['email'], 'role'=>$row['role'], 'created_at'=>$row['created_at']]]);
         exit;
     }
 

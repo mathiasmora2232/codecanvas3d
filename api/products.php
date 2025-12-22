@@ -7,8 +7,9 @@ header('Cache-Control: no-store');
 try {
     require __DIR__ . '/config.php';
 
-    $sql = "SELECT id, nombre, precio, descripcion, especificaciones, imagenesPeque, imagenInterna, destacado
-            FROM productos ORDER BY id";
+        $sql = "SELECT id, nombre, precio, descripcion, especificaciones, imagenesPeque, imagenInterna, destacado,
+                activo, oferta_pct, oferta_desde, oferta_hasta
+            FROM productos WHERE COALESCE(activo,1)=1 ORDER BY id DESC";
     $stmt = pdo()->prepare($sql);
     $stmt->execute();
     $rows = $stmt->fetchAll();
@@ -33,11 +34,20 @@ try {
         return array_values(array_filter(array_map('trim', $parts), fn($x)=>$x!==''));
     };
 
-    $data = array_map(function ($r) use ($toBool, $toArray) {
+    $now = new DateTimeImmutable('now');
+    $data = array_map(function ($r) use ($toBool, $toArray, $now) {
+        $base = isset($r['precio']) ? (float)$r['precio'] : 0;
+        $offer = (int)($r['oferta_pct'] ?? 0);
+        $desde = !empty($r['oferta_desde']) ? new DateTimeImmutable($r['oferta_desde']) : null;
+        $hasta = !empty($r['oferta_hasta']) ? new DateTimeImmutable($r['oferta_hasta']) : null;
+        $activeOffer = $offer > 0 && (!$desde || $now >= $desde) && (!$hasta || $now <= $hasta);
+        $final = $activeOffer ? max(0, $base * (1 - $offer/100)) : $base;
         return [
             'id' => strval($r['id']),
             'title' => $r['nombre'] ?? '',
-            'precio' => isset($r['precio']) ? (float)$r['precio'] : 0,
+            'precio' => $final,
+            'precioBase' => $base,
+            'oferta_pct' => (int)($r['oferta_pct'] ?? 0),
             'descripcion' => $r['descripcion'] ?? '',
             'especificaciones' => $toArray($r['especificaciones'] ?? null),
             'imagenesPeque' => $toArray($r['imagenesPeque'] ?? null),
