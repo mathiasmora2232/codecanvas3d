@@ -8,7 +8,7 @@ let PRODUCTS_CACHE = [];
 function safeSrc(u, placeholder='img/thumb-placeholder.svg') {
   try {
     if (!u) return placeholder;
-    const s = String(u).replace(/\\/g, '/');
+    const s = String(u).trim().replace(/\\/g, '/');
     return encodeURI(s);
   } catch { return placeholder; }
 }

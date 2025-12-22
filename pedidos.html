@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Página 3D | Cuenta</title>
+  <title>Página 3D | Mis pedidos</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -21,45 +21,24 @@
   </header>
 
   <main>
-    <section class="container section" id="account-section">
-      <h1 class="section-title">Mi Cuenta</h1>
+    <section class="container section">
+      <h1 class="section-title">Mis pedidos</h1>
 
       <div class="account-layout">
         <aside class="account-sidebar">
           <nav class="account-nav">
-            <a class="active" href="account.html">Mi cuenta</a>
-            <a href="pedidos.html">Mis pedidos</a>
-            <a href="#" aria-disabled="true">Mis productos descargables</a>
-            <a href="#" aria-disabled="true">Favoritos</a>
+            <a href="account.html">Mi cuenta</a>
+            <a class="active" href="pedidos.html">Mis pedidos</a>
             <a href="direcciones.html">Libreta de direcciones</a>
           </nav>
         </aside>
-
         <div class="account-content">
-          <div id="account-guest" class="account-card hidden">
-            <p>Para gestionar tu cuenta primero inicia sesión.</p>
+          <div id="orders-guest" class="account-card hidden">
+            <p>Inicia sesión para ver tus pedidos.</p>
             <p><a class="btn" href="login.html">Ir a Iniciar sesión</a></p>
           </div>
-
-          <div id="account-user" class="account-card hidden">
-            <div class="account-header">
-              <div>
-                <h2 style="margin:0">Información de la cuenta</h2>
-                <p class="account-sub">Hola, <strong id="acc-name"></strong> (<span id="acc-user"></span>)</p>
-              </div>
-              <button id="logout-btn" class="btn">Cerrar sesión</button>
-            </div>
-
-            <div class="account-grid">
-              <div class="account-block">
-                <h3>Información de Contacto</h3>
-                <p id="acc-email"></p>
-                <div class="account-actions">
-                  <a class="btn" href="account-edit.html">Editar</a>
-                  <a class="btn" href="#" aria-disabled="true">Cambiar contraseña</a>
-                </div>
-              </div>
-            </div>
+          <div id="orders-user" class="account-card hidden">
+            <div id="orders-list" class="form" style="max-width:900px"></div>
           </div>
         </div>
       </div>
@@ -81,6 +60,6 @@
   </footer>
 
   <script src="js/site.js" defer></script>
-  <script src="js/account.js" defer></script>
+  <script src="js/pedidos.js" defer></script>
 </body>
 </html>

@@ -10,6 +10,14 @@
       try { localStorage.setItem('cart_summary', JSON.stringify({count:d.count||0,total:d.total||0})); } catch {}
     } catch {}
   }
+  function saveOrder(payload){
+    try {
+      const key='orders';
+      const list = JSON.parse(localStorage.getItem(key)||'[]');
+      list.push(payload);
+      localStorage.setItem(key, JSON.stringify(list));
+    } catch {}
+  }
   async function loadAddresses(){
     try { const r = await fetch('api/profile.php?action=addr_list',{credentials:'same-origin'}); if(!r.ok) return [];
       return await r.json();
@@ -50,8 +58,23 @@
         const email  = $('#g-email')?.value.trim();
         if(!nombre || !email){ msg.style.color='var(--danger)'; msg.textContent='Completa nombre y email para continuar.'; return; }
       }
+      // Obtener items actuales antes de limpiar
+      let snapshot = { items: [], count: 0, total: 0 };
+      try { const r = await fetch('api/cart.php?action=get',{cache:'no-store',credentials:'same-origin'}); const d = await r.json(); snapshot = { items: d.items||[], count: d.count||0, total: d.total||0 }; } catch {}
       msg.style.color='var(--accent)';
       msg.textContent = 'Pedido simulado creado. ¡Gracias por tu compra!';
+      // Guardar pedido simulado
+      const order = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        userId: st2.user?.id || null,
+        guest: st2.user? null : { nombre: $('#g-nombre')?.value.trim(), email: $('#g-email')?.value.trim() },
+        items: snapshot.items,
+        count: snapshot.count,
+        total: snapshot.total,
+        notas: $('#p-notas')?.value || ''
+      };
+      saveOrder(order);
       // Limpiar carrito (simulación)
       try { await fetch('api/cart.php', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify({action:'clear'}) });
         document.dispatchEvent(new CustomEvent('cart:updated'));

@@ -1,6 +1,6 @@
 // Panel de carrito para producto
 (function(){
-  function safeSrc(u){ try { if (!u) return 'img/thumb-placeholder.svg'; const s=String(u).replace(/\\/g,'/'); return encodeURI(s); } catch { return 'img/thumb-placeholder.svg'; } }
+  function safeSrc(u){ try { if (!u) return 'img/thumb-placeholder.svg'; const s=String(u).trim().replace(/\\/g,'/'); return encodeURI(s); } catch { return 'img/thumb-placeholder.svg'; } }
   const CART_KEY = 'cart_summary';
   const $ = (s)=>document.querySelector(s);
   const panel = document.getElementById('cart-panel');

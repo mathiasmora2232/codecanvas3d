@@ -3,7 +3,7 @@
 function safeSrc(u, placeholder){
   try {
     if (!u) return placeholder || 'img/large-placeholder.svg';
-    const s = String(u).replace(/\\/g,'/');
+    const s = String(u).trim().replace(/\\/g,'/');
     return encodeURI(s);
   } catch { return placeholder || 'img/large-placeholder.svg'; }
 }
