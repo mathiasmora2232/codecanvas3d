@@ -20,6 +20,25 @@
   showRegister?.addEventListener('click', toggleToRegister);
   showLogin?.addEventListener('click', toggleToLogin);
 
+  // Si ya está logueado, evitar re-login y redirigir/mostrar mensaje
+  (async function precheck(){
+    try {
+      const res = await fetch('api/auth.php?action=status', { cache:'no-store', credentials:'same-origin' });
+      const data = await res.json();
+      if (data && data.user) {
+        // Ocultamos formularios y avisamos
+        hide(loginView); hide(registerView);
+        const msg = document.createElement('div');
+        msg.className = 'account-note';
+        msg.textContent = 'Ya estás autenticado. Gestiona tu cuenta a continuación.';
+        loginView?.parentElement?.insertBefore(msg, loginView);
+        const go = document.createElement('p');
+        go.innerHTML = '<a class="btn" href="account.html">Ir a Mi cuenta</a>';
+        msg.parentElement?.insertBefore(go, msg.nextSibling);
+      }
+    } catch {}
+  })();
+
   // Cerrar modal
   regModal?.addEventListener('click', (e) => {
     if (e.target.matches('[data-close]')) {
@@ -32,6 +51,12 @@
   loginForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginMsg.textContent = '';
+    // Evitar login si ya está autenticado
+    try {
+      const r = await fetch('api/auth.php?action=status', { cache:'no-store', credentials:'same-origin' });
+      const d = await r.json();
+      if (d && d.user) { loginMsg.textContent = 'Ya tienes sesión iniciada.'; return; }
+    } catch {}
     const usuario = document.getElementById('login-usuario').value.trim();
     const password = document.getElementById('login-pass').value.trim();
     if (!usuario || !password) {

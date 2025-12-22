@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Página 3D | Checkout</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Página3D</a>
+      <button class="nav-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Menú">☰</button>
+      <nav id="main-nav" class="main-nav" aria-label="Principal">
+        <a href="index.html">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a href="contacto.html">Contacto</a>
+        <a href="solicitudes.html">Solicitudes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="container section">
+      <h1 class="section-title">Checkout</h1>
+
+      <div id="checkout" class="grid" style="grid-template-columns: 1fr .8fr; gap: 20px; align-items:start;">
+        <div>
+          <div id="checkout-status" class="account-note"></div>
+
+          <div id="checkout-guest" class="card hidden" style="padding:12px;">
+            <h3>Datos de contacto</h3>
+            <form id="guest-form" class="form">
+              <div class="form-row"><label for="g-nombre">Nombre</label><input id="g-nombre" type="text" required></div>
+              <div class="form-row"><label for="g-email">Email</label><input id="g-email" type="email" required></div>
+            </form>
+          </div>
+
+          <div id="checkout-address" class="card hidden" style="padding:12px;">
+            <h3>Dirección de envío</h3>
+            <div id="addr-select"></div>
+            <p><a class="btn" href="direcciones.html">Gestionar direcciones</a></p>
+          </div>
+
+          <div id="checkout-payment" class="card" style="padding:12px;">
+            <h3>Método de pago (simulado)</h3>
+            <form id="pay-form" class="form">
+              <div class="form-row"><label for="p-metodo">Método</label>
+                <select id="p-metodo">
+                  <option value="efectivo">Efectivo contra entrega</option>
+                  <option value="transferencia">Transferencia bancaria</option>
+                </select>
+              </div>
+              <div class="form-row"><label for="p-notas">Notas</label><textarea id="p-notas" rows="3" placeholder="Instrucciones para el pedido"></textarea></div>
+            </form>
+          </div>
+        </div>
+
+        <aside class="card" style="background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px;">
+          <h3>Resumen</h3>
+          <div id="summary-count"></div>
+          <div id="summary-total" style="font-weight:700; color: var(--accent);"></div>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button id="place-order" class="btn btn-primary">Finalizar compra</button>
+            <a class="btn" href="carrito.html">Volver al carrito</a>
+          </div>
+          <div id="place-msg" style="margin-top:8px; color: var(--muted);"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>Página3D</strong>
+        <p>Soluciones en impresión 3D: prototipos, piezas funcionales y merchandising.</p>
+      </div>
+      <div class="footer-contact">
+        <p>Email: <a href="mailto:mathiasmoraflores30@gmail.com">mathiasmoraflores30@gmail.com</a></p>
+        <p>Tel: +593 961788696</p>
+      </div>
+      <div class="footer-copy">© 2025 Página3D. Todos los derechos reservados.</div>
+    </div>
+  </footer>
+
+  <script src="js/site.js" defer></script>
+  <script src="js/checkout.js" defer></script>
+</body>
+</html>
