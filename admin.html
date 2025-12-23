@@ -66,6 +66,14 @@
             <div class="card" style="padding:12px"><div class="row"><strong>Usuarios:</strong><span id="st-users">0</span></div></div>
             <div class="card" style="padding:12px"><div class="row"><strong>Ventas:</strong><span id="st-sales">$0</span></div></div>
           </div>
+          <div class="card" style="margin-top:12px; padding:12px">
+            <h3 style="margin:0 0 8px">Ventas por día</h3>
+            <canvas id="chart-sales" height="120"></canvas>
+          </div>
+          <div class="card" style="margin-top:12px; padding:12px">
+            <h3 style="margin:0 0 8px">Stock bajo</h3>
+            <ul id="low-stock-list" class="spec-list"></ul>
+          </div>
         </div>
 
         <div id="view-products" class="hidden">
@@ -107,7 +115,17 @@
 
         <div id="view-orders" class="hidden">
           <h3>Pedidos</h3>
-          <table class="table" id="tbl-orders"><thead><tr><th>ID</th><th>Usuario</th><th>Estado</th><th>Total</th><th>Creado</th></tr></thead><tbody></tbody></table>
+          <table class="table" id="tbl-orders"><thead><tr><th>ID</th><th>UserID</th><th>Nombre</th><th>Estado</th><th>Total</th><th>Creado</th><th>Dirección</th><th></th></tr></thead><tbody></tbody></table>
+          <dialog id="dlg-order">
+            <div style="padding:16px; min-width:600px">
+              <h3>Pedido <span id="od-id"></span></h3>
+              <div id="od-meta" style="margin-bottom:8px"></div>
+              <table class="table"><thead><tr><th>ProductoID</th><th>Título</th><th>Variante</th><th>Precio</th><th>Cantidad</th></tr></thead><tbody id="od-items"></tbody></table>
+              <menu style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end">
+                <button type="button" class="btn" onclick="document.getElementById('dlg-order').close()">Cerrar</button>
+              </menu>
+            </div>
+          </dialog>
         </div>
 
         <div id="view-users" class="hidden">
@@ -125,6 +143,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="js/site.js?v=20251222" defer></script>
   <script src="js/admin.js?v=20251222" defer></script>
 </body>

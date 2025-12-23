@@ -141,6 +141,23 @@ try {
         echo json_encode(['ok'=>true]);
         exit;
     }
+    if ($action === 'products_activate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $in = inputJSON();
+        $id = (int)($in['id'] ?? 0);
+        $stmt = $pdo->prepare('UPDATE productos SET activo=1, updated_at=NOW() WHERE id=:id');
+        $stmt->execute([':id'=>$id]);
+        echo json_encode(['ok'=>true]);
+        exit;
+    }
+    if ($action === 'products_remove' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $in = inputJSON();
+        $id = (int)($in['id'] ?? 0);
+        // eliminar fisicamente
+        $stmt = $pdo->prepare('DELETE FROM productos WHERE id=:id');
+        $stmt->execute([':id'=>$id]);
+        echo json_encode(['ok'=>true]);
+        exit;
+    }
 
     if ($action === 'products_restock' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $in = inputJSON();
@@ -161,11 +178,11 @@ try {
     }
     if ($action === 'orders_detail') {
         $id = (int)($_GET['id'] ?? 0);
-        $q = $pdo->prepare('SELECT id, user_id, estado, total, creado FROM pedidos WHERE id=:id');
+        $q = $pdo->prepare('SELECT p.id, p.user_id, p.estado, p.total, p.creado, p.direccion_id, u.nombre AS usuario_nombre, u.email AS usuario_email FROM pedidos p LEFT JOIN usuarios u ON u.id=p.user_id WHERE p.id=:id');
         $q->execute([':id'=>$id]);
         $o = $q->fetch(PDO::FETCH_ASSOC);
         if(!$o){ http_response_code(404); echo json_encode(['error'=>'No encontrado']); exit; }
-        $qi = $pdo->prepare('SELECT id, pedido_id, producto_id, titulo, variante, precio, cantidad FROM pedido_items WHERE pedido_id=:id');
+        $qi = $pdo->prepare('SELECT id, pedido_id, producto_id, titulo, variante, precio, precio_original, descuento_pct, cantidad FROM pedido_items WHERE pedido_id=:id');
         $qi->execute([':id'=>$id]);
         $o['items'] = $qi->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($o);
