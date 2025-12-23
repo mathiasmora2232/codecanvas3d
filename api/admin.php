@@ -106,6 +106,8 @@ try {
         $id = isset($in['id']) ? (int)$in['id'] : 0;
         $nombre = trim((string)($in['nombre'] ?? ''));
         $precio = (float)($in['precio'] ?? 0);
+        if ($precio > 1000) { http_response_code(400); echo json_encode(['error'=>'Precio supera el límite permitido ($1000)']); exit; }
+        if ($precio < 0) { http_response_code(400); echo json_encode(['error'=>'Precio no puede ser negativo']); exit; }
         $descripcion = (string)($in['descripcion'] ?? '');
         $especificaciones = $in['especificaciones'] ?? [];
         if (!is_array($especificaciones)) { $especificaciones = preg_split('/[;,]\s*/', (string)$especificaciones); }

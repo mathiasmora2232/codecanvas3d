@@ -81,14 +81,14 @@
             <h3>Productos</h3>
             <button id="btn-new" class="btn btn-primary">+ Nuevo producto</button>
           </div>
-          <table class="table" id="tbl-products"><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Activo</th><th>Stock</th><th>Oferta%</th><th></th></tr></thead><tbody></tbody></table>
+          <table class="table" id="tbl-products"><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Estado</th><th>Stock</th><th>Oferta%</th><th></th></tr></thead><tbody></tbody></table>
           <dialog id="dlg-product">
             <form id="frm-product" style="min-width:640px">
               <h3 id="dlg-title">Producto</h3>
               <div class="grid2">
                 <div>
                   <label>Nombre<input id="p-nombre" type="text" required></label>
-                  <label>Precio<input id="p-precio" type="number" step="0.01" required></label>
+                  <label>Precio<input id="p-precio" type="number" step="0.01" min="0" max="1000" required></label>
                   <label>Activo<input id="p-activo" type="checkbox"></label>
                   <label>Stock<input id="p-stock" type="number"></label>
                   <label>Oferta %<input id="p-oferta" type="number" min="0" max="90"></label>

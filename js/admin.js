@@ -37,7 +37,7 @@
   async function loadStats(){ try{ const s=await api('stats', null, {method:'GET'}); $('#st-products').textContent=s.productos; $('#st-orders').textContent=s.pedidos; $('#st-users').textContent=s.usuarios; $('#st-sales').textContent = Number(s.ventas||0).toLocaleString('es-EC',{style:'currency',currency:'USD'}); } catch(e){}}
 
   // Productos
-  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>{ const activo=(r.activo||r.Activo)?1:0; const btnToggle = activo? `<button class="btn btn-small btn-danger" data-del="${r.id}">🛑 Desactivar</button>` : `<button class="btn btn-small" data-activate="${r.id}">✅ Activar</button>`; return `<tr><td>${r.id}</td><td>${r.nombre||r.Nombre||''}</td><td>$${Number(r.precio||r.Precio||0).toFixed(2)}</td><td>${activo?'<span class="pill">Sí</span>':'<span class="pill">No</span>'}</td><td>${r.stock||r.Stock||0}</td><td>${r.oferta_pct||r.Oferta_pct||0}</td><td><button class="btn btn-small" data-edit="${r.id}">✏️ Editar</button> ${btnToggle} <button class="btn btn-small" data-remove="${r.id}">🗑 Eliminar</button> <button class="btn btn-small" data-restock="${r.id}">➕ Re-stock</button></td></tr>`; }).join(''); }
+  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>{ const activo=(r.activo||r.Activo)?1:0; const btnToggle = activo? `<button class="btn btn-small btn-danger" data-del="${r.id}">🛑 Desactivar</button>` : `<button class="btn btn-small" data-activate="${r.id}">✅ Activar</button>`; const estado = activo? '<span class="pill">Activo</span>' : '<span class="pill">Inactivo</span>'; return `<tr><td>${r.id}</td><td>${r.nombre||r.Nombre||''}</td><td>$${Number(r.precio||r.Precio||0).toFixed(2)}</td><td>${estado}</td><td>${r.stock||r.Stock||0}</td><td>${r.oferta_pct||r.Oferta_pct||0}</td><td><button class="btn btn-small" data-edit="${r.id}">✏️ Editar</button> ${btnToggle} <button class="btn btn-small" data-remove="${r.id}">🗑 Eliminar</button> <button class="btn btn-small" data-restock="${r.id}">➕ Re-stock</button></td></tr>`; }).join(''); }
   async function loadProducts(){ try{ const list=await api('products_list', null, {method:'GET'}); renderProducts(list); } catch(e){}}
   function openProductDialog(data){
     const dlg = $('#dlg-product'); const form=$('#frm-product'); dlg.returnValue='';
@@ -75,6 +75,8 @@
       imagenInterna: $('#p-img-main').value,
       imagenesPeque: JSON.parse($('#thumbs').dataset.paths||'[]')
     };
+    if (payload.precio > 1000) { alert('El precio no puede superar $1000.'); return; }
+    if (payload.precio < 0) { alert('El precio no puede ser negativo.'); return; }
     await api('products_save', payload);
     $('#dlg-product').close();
     await loadProducts(); await loadStats();
