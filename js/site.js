@@ -47,9 +47,15 @@ async function getProducts() {
 
 const money = (n) => {
   try {
-    return (n ?? 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+    return (n ?? 0).toLocaleString('es-EC', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
   } catch {
-    return `$${n}`;
+    const v = Number(n ?? 0);
+    return `$${v.toFixed(2)}`;
   }
 };
 
@@ -57,13 +63,13 @@ function productCard(p) {
   const thumb = safeSrc((p.imagenesPeque && p.imagenesPeque[0]) || null);
   const hasDiscount = !!(p.oferta_activa && (p.oferta_pct || 0) > 0);
   const priceHtml = hasDiscount
-    ? `<div class="price"><span class="old-price" style="text-decoration:line-through; color:var(--muted)">${money(p.precioBase)}</span> <span class="new-price">${money(p.precio)}</span></div>
-       <div class="pill" style="background:var(--accent); color:#fff">-${Number(p.oferta_pct||0)}% descuento</div>`
-    : `<div class="price">${money(p.precio)}</div>`;
+    ? `<div class="price"><span class="price-old">${money(p.precioBase)}</span> <span class="price-new">${money(p.precio)}</span></div>
+       <div class="discount-badge">-${Number(p.oferta_pct||0)}%</div>`
+    : `<div class="price"><span class="price-new">${money(p.precio)}</span></div>`;
   const stockState = p.stockState || 'stock_ok';
   const stockBadge = stockState==='sin_stock'
-    ? '<div class="pill" style="background:#b91c1c;color:#fff">Sin stock</div>'
-    : (stockState==='poco_stock' ? '<div class="pill" style="background:#f59e0b;color:#000">Poco stock</div>' : '');
+    ? '<div class="stock-badge stock-none">Sin stock</div>'
+    : (stockState==='poco_stock' ? '<div class="stock-badge stock-low">Poco stock</div>' : '');
   return `
     <article class="product-card" data-id="${p.id}">
       <img class="product-media" src="${thumb}" alt="${p.title}" loading="lazy" onerror="this.src='img/thumb-placeholder.svg'"/>
@@ -147,6 +153,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   initMobileNav();
   const featuredGrid = document.getElementById('featured-grid');
   const productsGrid = document.getElementById('products-grid');
+  const paginationEl = document.getElementById('products-pagination');
   const products = await getProducts();
 
   if (featuredGrid) {
@@ -155,8 +162,35 @@ window.addEventListener('DOMContentLoaded', async () => {
     wireCardClicks(featuredGrid);
   }
   if (productsGrid) {
-    renderList(products, productsGrid);
-    wireCardClicks(productsGrid);
+    // Paginado: 10 por página
+    let page = 1;
+    const pageSize = 10;
+    const total = products.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    function renderPage() {
+      const start = (page - 1) * pageSize;
+      const slice = products.slice(start, start + pageSize);
+      renderList(slice, productsGrid);
+      wireCardClicks(productsGrid);
+      if (paginationEl) {
+        paginationEl.innerHTML = `
+          <button class="page-btn" data-prev ${page<=1?'disabled':''}>Anterior</button>
+          <span class="page-info">Página ${page} de ${totalPages}</span>
+          <button class="page-btn" data-next ${page>=totalPages?'disabled':''}>Siguiente</button>`;
+      }
+    }
+
+    renderPage();
+    if (paginationEl) {
+      paginationEl.addEventListener('click', (e)=>{
+        const b = e.target.closest('.page-btn'); if(!b) return;
+        if (b.hasAttribute('data-prev') && page>1) page--;
+        if (b.hasAttribute('data-next') && page<totalPages) page++;
+        renderPage();
+        productsGrid.scrollTo({ left: 0, top: 0, behavior: 'smooth' });
+      });
+    }
   }
 });
 

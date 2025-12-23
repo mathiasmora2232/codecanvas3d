@@ -94,11 +94,11 @@ async function renderProduct() {
 
   document.title = `Página 3D | ${p.title}`;
   titleEl.textContent = p.title || '';
-  // Mostrar precio con descuento si aplica
+  // Mostrar precio con descuento si aplica (estilo minimalista)
   if (p.oferta_activa && (p.oferta_pct||0) > 0) {
-    priceEl.innerHTML = `<span style="text-decoration:line-through; color:var(--muted)">${money(p.precioBase)}</span> <strong>${money(p.precio)}</strong> <span class="pill" style="background:var(--accent); color:#fff; margin-left:6px">-${Number(p.oferta_pct||0)}% descuento</span>`;
+    priceEl.innerHTML = `<span class="price-old">${money(p.precioBase)}</span> <strong class="price-new">${money(p.precio)}</strong> <span class="discount-badge" style="margin-left:6px">-${Number(p.oferta_pct||0)}%</span>`;
   } else {
-    priceEl.textContent = money(p.precio);
+    priceEl.innerHTML = `<span class="price-new">${money(p.precio)}</span>`;
   }
   const primary = safeSrc(p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]), 'img/large-placeholder.svg');
   imgEl.src = primary;
