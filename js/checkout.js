@@ -53,11 +53,13 @@
       }
       // Crear pedido real en la base de datos
       try {
+        // tomar dirección seleccionada si existe
+        let dirId = null; const sel = document.querySelector('input[name="addr"]:checked'); if (sel) dirId = Number(sel.value||'0')||null;
         const res = await fetch('api/orders.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
-          body: JSON.stringify({ action: 'create', notas: $('#p-notas')?.value || '' })
+          body: JSON.stringify({ action: 'create', notas: $('#p-notas')?.value || '', direccion_id: dirId })
         });
         const out = await res.json();
         if(!res.ok || out.error){

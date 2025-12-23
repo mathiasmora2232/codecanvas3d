@@ -8,7 +8,7 @@ try {
     require __DIR__ . '/config.php';
 
         $sql = "SELECT id, nombre, precio, descripcion, especificaciones, imagenesPeque, imagenInterna, destacado,
-                activo, oferta_pct, oferta_desde, oferta_hasta
+                activo, stock, oferta_pct, oferta_desde, oferta_hasta
             FROM productos WHERE COALESCE(activo,1)=1 ORDER BY id DESC";
     $stmt = pdo()->prepare($sql);
     $stmt->execute();
@@ -42,17 +42,24 @@ try {
         $hasta = !empty($r['oferta_hasta']) ? new DateTimeImmutable($r['oferta_hasta']) : null;
         $activeOffer = $offer > 0 && (!$desde || $now >= $desde) && (!$hasta || $now <= $hasta);
         $final = $activeOffer ? max(0, $base * (1 - $offer/100)) : $base;
+        $stock = (int)($r['stock'] ?? 0);
+        $lowThreshold = 5;
+        $stockState = $stock <= 0 ? 'sin_stock' : ($stock <= $lowThreshold ? 'poco_stock' : 'stock_ok');
         return [
             'id' => strval($r['id']),
             'title' => $r['nombre'] ?? '',
             'precio' => $final,
             'precioBase' => $base,
+            'precioConDescuento' => $activeOffer ? $final : null,
             'oferta_pct' => (int)($r['oferta_pct'] ?? 0),
+            'oferta_activa' => $activeOffer,
             'descripcion' => $r['descripcion'] ?? '',
             'especificaciones' => $toArray($r['especificaciones'] ?? null),
             'imagenesPeque' => $toArray($r['imagenesPeque'] ?? null),
             'imagenInterna' => $r['imagenInterna'] ?? null,
             'destacado' => $toBool($r['destacado'] ?? false),
+            'stock' => $stock,
+            'stockState' => $stockState,
         ];
     }, $rows);
 

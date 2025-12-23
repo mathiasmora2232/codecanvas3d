@@ -142,9 +142,20 @@ try {
         exit;
     }
 
+    if ($action === 'products_restock' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $in = inputJSON();
+        $id = (int)($in['id'] ?? 0);
+        $add = max(0, (int)($in['add'] ?? 0));
+        if ($id <= 0 || $add <= 0) { http_response_code(400); echo json_encode(['error'=>'Parámetros inválidos']); exit; }
+        $stmt = $pdo->prepare('UPDATE productos SET stock = stock + :add, updated_at=NOW() WHERE id=:id');
+        $stmt->execute([':add'=>$add, ':id'=>$id]);
+        echo json_encode(['ok'=>true]);
+        exit;
+    }
+
     // Pedidos
     if ($action === 'orders_list') {
-        $q = $pdo->query('SELECT id, user_id, estado, total, creado FROM pedidos ORDER BY id DESC');
+        $q = $pdo->query('SELECT p.id, p.user_id, p.estado, p.total, p.creado, p.direccion_id, u.nombre AS usuario_nombre, u.email AS usuario_email FROM pedidos p LEFT JOIN usuarios u ON u.id=p.user_id ORDER BY p.id DESC');
         echo json_encode($q->fetchAll(PDO::FETCH_ASSOC));
         exit;
     }

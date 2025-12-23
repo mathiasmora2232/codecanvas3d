@@ -94,7 +94,12 @@ async function renderProduct() {
 
   document.title = `Página 3D | ${p.title}`;
   titleEl.textContent = p.title || '';
-  priceEl.textContent = money(p.precio);
+  // Mostrar precio con descuento si aplica
+  if (p.oferta_activa && (p.oferta_pct||0) > 0) {
+    priceEl.innerHTML = `<span style="text-decoration:line-through; color:var(--muted)">${money(p.precioBase)}</span> <strong>${money(p.precio)}</strong> <span class="pill" style="background:var(--accent); color:#fff; margin-left:6px">-${Number(p.oferta_pct||0)}% descuento</span>`;
+  } else {
+    priceEl.textContent = money(p.precio);
+  }
   const primary = safeSrc(p.imagenInterna || (p.imagenesPeque && p.imagenesPeque[0]), 'img/large-placeholder.svg');
   imgEl.src = primary;
   imgEl.alt = p.title || 'Producto';
@@ -116,6 +121,15 @@ async function renderProduct() {
   const thumbs = Array.isArray(p.imagenesPeque) ? p.imagenesPeque.slice() : [];
   if (p.imagenInterna) thumbs.unshift(p.imagenInterna);
   setThumbs(thumbs, imgEl);
+
+  // Estado de stock
+  const stockState = p.stockState || 'stock_ok';
+  if (stockState === 'sin_stock') {
+    if (addBtn) { addBtn.disabled = true; addBtn.textContent = 'Sin stock'; }
+    if (emptyEl) { emptyEl.textContent = 'Sin stock disponible'; emptyEl.classList.remove('hidden'); }
+  } else if (stockState === 'poco_stock') {
+    if (emptyEl) { emptyEl.textContent = '¡Quedan pocas unidades!'; emptyEl.classList.remove('hidden'); }
+  }
 
   // Agregar al carrito
   if (addBtn) {

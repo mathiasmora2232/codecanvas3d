@@ -23,7 +23,7 @@ function inputJSON(): array {
 }
 
 function productById(int $id): ?array {
-    $q = pdo()->prepare('SELECT id, nombre, precio, imagenInterna, imagenesPeque FROM productos WHERE id=:id');
+    $q = pdo()->prepare('SELECT id, nombre, precio, imagenInterna, imagenesPeque, stock, oferta_pct, oferta_desde, oferta_hasta FROM productos WHERE id=:id');
     $q->execute([':id'=>$id]);
     $r = $q->fetch(PDO::FETCH_ASSOC);
     if (!$r) return null;
@@ -36,12 +36,24 @@ function productById(int $id): ?array {
             $imgPeq = array_values(array_filter(array_map('trim', $parts)));
         }
     }
+    // Calcular precio con descuento (si aplica)
+    $base = (float)($r['precio'] ?? 0);
+    $offer = (int)($r['oferta_pct'] ?? 0);
+    $desde = !empty($r['oferta_desde']) ? new DateTimeImmutable($r['oferta_desde']) : null;
+    $hasta = !empty($r['oferta_hasta']) ? new DateTimeImmutable($r['oferta_hasta']) : null;
+    $now = new DateTimeImmutable('now');
+    $active = $offer > 0 && (!$desde || $now >= $desde) && (!$hasta || $now <= $hasta);
+    $final = $active ? max(0, $base * (1 - $offer/100)) : $base;
+
     return [
         'id'=>(int)$r['id'],
         'title'=>(string)$r['nombre'],
-        'precio'=>(float)$r['precio'],
+        'precio'=>$final,
+        'precioBase'=>$base,
+        'descuento_pct'=>$active ? $offer : 0,
         'imagenInterna'=>$r['imagenInterna'] ?? null,
         'imagenesPeque'=>$imgPeq,
+        'stock'=>(int)($r['stock'] ?? 0),
     ];
 }
 
@@ -78,6 +90,9 @@ try {
         if (!$p) { http_response_code(404); echo json_encode(['error'=>'Producto no encontrado']); exit; }
         $img = $p['imagenInterna'] ?: ($p['imagenesPeque'][0] ?? null);
 
+        // bloquear si no hay stock
+        if (($p['stock'] ?? 0) <= 0) { http_response_code(400); echo json_encode(['error'=>'Sin stock disponible']); exit; }
+
         // límites: máximo por item y máximo total
         $cart = &cartRef();
         $key = $pid.'|'.strtolower($variant);
@@ -94,9 +109,11 @@ try {
             $itKey = ($pidVal.'|'.strtolower((string)($it['variante'] ?? '')));
             if ($itKey === $key) {
                 $newQty = min(MAX_PER_ITEM, (int)$it['cantidad'] + $qty);
+                // no exceder stock
+                $newQty = min($newQty, (int)($p['stock'] ?? 0));
                 if ($newQty === (int)$it['cantidad']) {
                     http_response_code(400);
-                    echo json_encode(['error'=>'Máximo 10 unidades por producto']);
+                    echo json_encode(['error'=>'Límite alcanzado (máx 10 o stock disponible)']);
                     exit;
                 }
                 $it['cantidad'] = $newQty;
@@ -111,8 +128,10 @@ try {
             'variante' => $variant ?: null,
             'titulo' => $p['title'],
             'precio' => $p['precio'],
+            'precio_original' => $p['precioBase'],
+            'descuento_pct' => $p['descuento_pct'] ?? 0,
             'imagen' => $img,
-            'cantidad' => min(MAX_PER_ITEM, $qty)
+            'cantidad' => min(MAX_PER_ITEM, min($qty, (int)($p['stock'] ?? 0)))
         ];
         echo json_encode(cartSummary());
         exit;
@@ -129,6 +148,10 @@ try {
                 // comprobar límite total
                 $totalExcept = 0; foreach ($cart['items'] as $jt) { if ((int)($jt['id'] ?? 0) !== $itemId) $totalExcept += (int)$jt['cantidad']; }
                 if ($totalExcept + $qty > MAX_TOTAL) { http_response_code(400); echo json_encode(['error'=>'Límite de 25 artículos en el carrito']); exit; }
+                // validar stock actual del producto
+                $pidVal = (int)($it['product_id'] ?? $it['producto_id'] ?? 0);
+                $p = productById($pidVal);
+                if ($p && $qty > (int)($p['stock'] ?? 0)) { http_response_code(400); echo json_encode(['error'=>'No hay suficiente stock']); exit; }
                 $it['cantidad'] = $qty;
                 echo json_encode(cartSummary());
                 exit;

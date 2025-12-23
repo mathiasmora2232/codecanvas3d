@@ -37,24 +37,25 @@
   async function loadStats(){ try{ const s=await api('stats', null, {method:'GET'}); $('#st-products').textContent=s.productos; $('#st-orders').textContent=s.pedidos; $('#st-users').textContent=s.usuarios; $('#st-sales').textContent = Number(s.ventas||0).toLocaleString('es-EC',{style:'currency',currency:'USD'}); } catch(e){}}
 
   // Productos
-  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.nombre}</td><td>$${Number(r.precio).toFixed(2)}</td><td>${r.activo?'<span class="pill">Sí</span>':'<span class="pill">No</span>'}</td><td>${r.stock||0}</td><td>${r.oferta_pct||0}</td><td><button class="btn btn-small" data-edit="${r.id}">✏️ Editar</button> <button class="btn btn-small btn-danger" data-del="${r.id}">🗑 Desactivar</button></td></tr>`).join(''); }
+  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.nombre||r.Nombre||''}</td><td>$${Number(r.precio||r.Precio||0).toFixed(2)}</td><td>${(r.activo||r.Activo)?'<span class="pill">Sí</span>':'<span class="pill">No</span>'}</td><td>${r.stock||r.Stock||0}</td><td>${r.oferta_pct||r.Oferta_pct||0}</td><td><button class="btn btn-small" data-edit="${r.id}">✏️ Editar</button> <button class="btn btn-small btn-danger" data-del="${r.id}">🗑 Desactivar</button> <button class="btn btn-small" data-restock="${r.id}">➕ Re-stock</button></td></tr>`).join(''); }
   async function loadProducts(){ try{ const list=await api('products_list', null, {method:'GET'}); renderProducts(list); } catch(e){}}
   function openProductDialog(data){
     const dlg = $('#dlg-product'); const form=$('#frm-product'); dlg.returnValue='';
     form.dataset.id = data?.id||'';
     $('#dlg-title').textContent = data?.id? `Editar #${data.id}` : 'Nuevo producto';
-    $('#p-nombre').value = data?.nombre||'';
-    $('#p-precio').value = data?.precio||'';
-    $('#p-activo').checked = !!(data?.activo ?? 1);
-    $('#p-stock').value = data?.stock||0;
-    $('#p-oferta').value = data?.oferta_pct||0;
-    $('#p-odesde').value = data?.oferta_desde? data.oferta_desde.replace(' ','T') : '';
-    $('#p-ohasta').value = data?.oferta_hasta? data.oferta_hasta.replace(' ','T') : '';
-    $('#p-descripcion').value = data?.descripcion||'';
-    const espec = (()=>{ try{ const j=JSON.parse(data?.especificaciones||'[]'); return Array.isArray(j)? j.join('\n') : (data?.especificaciones||''); } catch { return data?.especificaciones||''; } })();
+    const val = (obj, keys)=>{ for(const k of keys){ if(obj && obj[k] !== undefined && obj[k] !== null) return obj[k]; } return ''; };
+    $('#p-nombre').value = String(val(data,['nombre','Nombre'])||'');
+    $('#p-precio').value = String(val(data,['precio','Precio'])||'');
+    $('#p-activo').checked = !!(val(data,['activo','Activo']) ?? 1);
+    $('#p-stock').value = Number(val(data,['stock','Stock'])||0);
+    $('#p-oferta').value = Number(val(data,['oferta_pct','Oferta_pct'])||0);
+    $('#p-odesde').value = (val(data,['oferta_desde','Oferta_desde']) ? String(val(data,['oferta_desde','Oferta_desde'])).replace(' ','T') : '');
+    $('#p-ohasta').value = (val(data,['oferta_hasta','Oferta_hasta']) ? String(val(data,['oferta_hasta','Oferta_hasta'])).replace(' ','T') : '');
+    $('#p-descripcion').value = String(val(data,['descripcion','Descripcion'])||'');
+    const espec = (()=>{ try{ const raw=val(data,['especificaciones','Especificaciones'])||'[]'; const j=JSON.parse(raw); return Array.isArray(j)? j.join('\n') : (raw||''); } catch { return String(val(data,['especificaciones','Especificaciones'])||''); } })();
     $('#p-espec').value = espec;
-    $('#p-img-main').value = data?.imagenInterna||'';
-    const thumbs = (()=>{ try{ const j=JSON.parse(data?.imagenesPeque||'[]'); return Array.isArray(j)? j: []; } catch { return []; } })();
+    $('#p-img-main').value = String(val(data,['imagenInterna','ImagenInterna'])||'');
+    const thumbs = (()=>{ try{ const raw=val(data,['imagenesPeque','ImagenesPeque'])||'[]'; const j=JSON.parse(raw); return Array.isArray(j)? j: []; } catch { return []; } })();
     const tbox = $('#thumbs'); tbox.innerHTML = thumbs.map(p=>`<img src="${encodeURI(p)}" alt="thumb">`).join(''); tbox.dataset.paths = JSON.stringify(thumbs);
     dlg.showModal();
   }
@@ -90,7 +91,7 @@
   function addThumbPath(p){ const box=$('#thumbs'); const arr=JSON.parse(box.dataset.paths||'[]'); arr.push(p); box.dataset.paths=JSON.stringify(arr); const img=document.createElement('img'); img.src=encodeURI(p); img.alt='thumb'; box.appendChild(img); }
 
   // Pedidos
-  function renderOrders(rows){ const tb=$('#tbl-orders tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.user_id??''}</td><td>${r.estado}</td><td>$${Number(r.total).toFixed(2)}</td><td>${r.creado}</td></tr>`).join(''); }
+  function renderOrders(rows){ const tb=$('#tbl-orders tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.user_id??''}</td><td>${r.usuario_nombre||''}</td><td>${r.estado}</td><td>$${Number(r.total).toFixed(2)}</td><td>${r.creado}</td><td>${r.direccion_id??''}</td></tr>`).join(''); }
   async function loadOrders(){ try{ const list=await api('orders_list', null, {method:'GET'}); renderOrders(list); } catch(e){} }
 
   // Usuarios
@@ -113,6 +114,7 @@
       const btn = e.target.closest('button'); if(!btn) return; 
       if(btn.hasAttribute('data-edit')){ const id=Number(btn.getAttribute('data-edit')); const data=await api('products_get', null, {method:'GET', query:`&id=${id}`}); openProductDialog(data); }
       if(btn.hasAttribute('data-del')){ const id=Number(btn.getAttribute('data-del')); await delProduct(id); }
+      if(btn.hasAttribute('data-restock')){ const id=Number(btn.getAttribute('data-restock')); const add=Number(prompt('Cantidad a agregar a stock','5')||'0'); if(add>0){ try{ await api('products_restock',{id, add}); await loadProducts(); await loadStats(); } catch(err){ alert(err.message); } } }
     });
     $('#frm-product')?.addEventListener('submit', async (e)=>{ e.preventDefault(); try{ await saveProduct(); } catch(err){ alert(err.message); } });
     $('#btn-cancel')?.addEventListener('click', ()=>{ $('#dlg-product')?.close(); });

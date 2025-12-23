@@ -50,3 +50,35 @@ CREATE TABLE IF NOT EXISTS pedido_items (
 ## 3) Nota de uso
 - El carrito permanece en sesión (memoria). Al confirmar, se crea un `pedido` con sus `pedido_items`, se descuenta `inventario.stock` y se limpia el carrito.
 - Puedes añadir un trigger/procedimiento para evitar confirmar si `inventario.stock` < cantidad.
+
+## 4) ALTERs requeridos (según mejoras solicitadas)
+
+Para reflejar descuentos por item, dirección del pedido y gestión de stock en `productos`, ejecutar (ajusta nombres si tu esquema difiere):
+
+```sql
+-- Descuento aplicado y precio original en items
+ALTER TABLE pedido_items
+  ADD COLUMN precio_original DECIMAL(10,2) NULL AFTER precio,
+  ADD COLUMN descuento_pct TINYINT(3) UNSIGNED NOT NULL DEFAULT 0 AFTER precio_original;
+
+-- Dirección elegida al hacer el pedido (si existe tabla direcciones)
+ALTER TABLE pedidos
+  ADD COLUMN direccion_id INT UNSIGNED NULL AFTER user_id;
+
+ALTER TABLE pedidos
+  ADD CONSTRAINT fk_pedido_dir FOREIGN KEY (direccion_id) REFERENCES direcciones(id)
+  ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- Stock directo en productos (si aún no existe)
+ALTER TABLE productos
+  ADD COLUMN stock INT NOT NULL DEFAULT 0,
+  ADD COLUMN activo TINYINT(1) NOT NULL DEFAULT 1,
+  ADD COLUMN oferta_pct TINYINT(3) UNSIGNED NOT NULL DEFAULT 0,
+  ADD COLUMN oferta_desde DATETIME NULL,
+  ADD COLUMN oferta_hasta DATETIME NULL;
+```
+
+Estados sugeridos de stock en frontend (sin columnas extra):
+- `sin_stock`: `stock <= 0`
+- `poco_stock`: `stock <= 5`
+- `stock_ok`: `stock > 5`

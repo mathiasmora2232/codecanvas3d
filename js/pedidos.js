@@ -14,9 +14,17 @@
     if(!list.length){ box.innerHTML='<em>No tienes pedidos todavía.</em>'; return; }
     box.innerHTML = list.map(o=>{
       const fecha = o.creado ? new Date(o.creado) : (o.date? new Date(o.date) : new Date());
-      const items = (o.items||[]).map(it=>`<li>${it.titulo||it.title||'Producto'} × ${it.cantidad||it.qty||1} — $${Number(it.precio||0).toFixed(2)}</li>`).join('');
+      const items = (o.items||[]).map(it=>{
+        const base = Number(it.precio_original||0);
+        const final = Number(it.precio||0);
+        const pct   = Number(it.descuento_pct||0);
+        const priceHtml = pct>0 ? `<span style="text-decoration:line-through; color:var(--muted)">$${base.toFixed(2)}</span> <strong>$${final.toFixed(2)}</strong> <span class="pill" style="background:var(--accent); color:#fff; margin-left:6px">-${pct}%</span>` : `$${final.toFixed(2)}`;
+        return `<li>#${it.producto_id} — ${it.titulo||it.title||'Producto'} × ${it.cantidad||it.qty||1} — ${priceHtml}</li>`;
+      }).join('');
       const count = (o.items||[]).reduce((a,x)=>a + (Number(x.cantidad||x.qty||1)),0);
-      return `<div class="account-block" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>Pedido #${o.id}</strong><span>${fecha.toLocaleString()}</span></div><div>Total: <strong>$${Number(o.total||0).toFixed(2)}</strong> — ${count} artículo(s)</div><details style="margin-top:6px"><summary>Ver items</summary><ul class="spec-list">${items}</ul></details></div>`;
+      const who = o.usuario_nombre ? `${o.usuario_nombre} (${o.usuario_email||''})` : '';
+      const dir = o.direccion_id ? `• Dirección #${o.direccion_id}` : '';
+      return `<div class="account-block" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>Pedido #${o.id}</strong><span>${fecha.toLocaleString()}</span></div><div>${who} ${dir}</div><div>Total: <strong>$${Number(o.total||0).toFixed(2)}</strong> — ${count} artículo(s)</div><details style="margin-top:6px"><summary>Ver items</summary><ul class="spec-list">${items}</ul></details></div>`;
     }).join('');
   }
   document.addEventListener('DOMContentLoaded', async ()=>{

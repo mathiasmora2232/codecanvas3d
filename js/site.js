@@ -55,12 +55,22 @@ const money = (n) => {
 
 function productCard(p) {
   const thumb = safeSrc((p.imagenesPeque && p.imagenesPeque[0]) || null);
+  const hasDiscount = !!(p.oferta_activa && (p.oferta_pct || 0) > 0);
+  const priceHtml = hasDiscount
+    ? `<div class="price"><span class="old-price" style="text-decoration:line-through; color:var(--muted)">${money(p.precioBase)}</span> <span class="new-price">${money(p.precio)}</span></div>
+       <div class="pill" style="background:var(--accent); color:#fff">-${Number(p.oferta_pct||0)}% descuento</div>`
+    : `<div class="price">${money(p.precio)}</div>`;
+  const stockState = p.stockState || 'stock_ok';
+  const stockBadge = stockState==='sin_stock'
+    ? '<div class="pill" style="background:#b91c1c;color:#fff">Sin stock</div>'
+    : (stockState==='poco_stock' ? '<div class="pill" style="background:#f59e0b;color:#000">Poco stock</div>' : '');
   return `
     <article class="product-card" data-id="${p.id}">
       <img class="product-media" src="${thumb}" alt="${p.title}" loading="lazy" onerror="this.src='img/thumb-placeholder.svg'"/>
       <div class="product-body">
         <h3 class="product-title">${p.title}</h3>
-        <div class="price">${money(p.precio)}</div>
+        ${priceHtml}
+        ${stockBadge}
         <div class="card-actions">
           <button class="btn" data-action="view" data-id="${p.id}">Ver detalles</button>
         </div>
