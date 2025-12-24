@@ -34,10 +34,18 @@
     $$('.admin-nav a').forEach(a=>a.classList.toggle('active', a.dataset.view===id));
   }
 
-  async function loadStats(){ try{ const s=await api('stats', null, {method:'GET'}); $('#st-products').textContent=s.productos; $('#st-orders').textContent=s.pedidos; $('#st-users').textContent=s.usuarios; $('#st-sales').textContent = Number(s.ventas||0).toLocaleString('es-EC',{style:'currency',currency:'USD'}); } catch(e){}}
+  async function loadStats(){ try{ const s=await api('stats', null, {method:'GET'}); $('#st-products').textContent=s.productos; $('#st-orders').textContent=s.pedidos; $('#st-users').textContent=s.usuarios; $('#st-sales').textContent = Number(s.ventas||0).toLocaleString('es-EC',{style:'currency',currency:'USD', minimumFractionDigits:2}); const itemsEl=document.getElementById('st-items'); if(itemsEl) itemsEl.textContent = s.items_vendidos||0; const subOrigEl=document.getElementById('st-suboriginal'); if(subOrigEl) subOrigEl.textContent = Number(s.subtotal_original||0).toLocaleString('es-EC',{style:'currency',currency:'USD', minimumFractionDigits:2}); const discEl=document.getElementById('st-discount'); if(discEl) discEl.textContent = Number(s.ahorro_total||0).toLocaleString('es-EC',{style:'currency',currency:'USD', minimumFractionDigits:2}); } catch(e){} }
 
   // Productos
-  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>{ const activo=(r.activo||r.Activo)?1:0; const btnToggle = activo? `<button class="btn btn-small btn-danger" data-del="${r.id}">🛑 Desactivar</button>` : `<button class="btn btn-small" data-activate="${r.id}">✅ Activar</button>`; const estado = activo? '<span class="pill">Activo</span>' : '<span class="pill">Inactivo</span>'; return `<tr><td>${r.id}</td><td>${r.nombre||r.Nombre||''}</td><td>$${Number(r.precio||r.Precio||0).toFixed(2)}</td><td>${estado}</td><td>${r.stock||r.Stock||0}</td><td>${r.oferta_pct||r.Oferta_pct||0}</td><td><button class="btn btn-small" data-edit="${r.id}">✏️ Editar</button> ${btnToggle} <button class="btn btn-small" data-remove="${r.id}">🗑 Eliminar</button> <button class="btn btn-small" data-restock="${r.id}">➕ Re-stock</button></td></tr>`; }).join(''); }
+  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>{ const activo=(r.activo||r.Activo)?1:0; const btnToggle = activo? `<button class="btn btn-small btn-danger" data-del="${r.id}">Desactivar</button>` : `<button class="btn btn-small" data-activate="${r.id}">Activar</button>`; const estado = activo? '<span class="pill">Activo</span>' : '<span class="pill">Inactivo</span>'; return `<tr>
+      <td data-label="ID">${r.id}</td>
+      <td data-label="Nombre">${r.nombre||r.Nombre||''}</td>
+      <td data-label="Precio">$${Number(r.precio||r.Precio||0).toFixed(2)}</td>
+      <td data-label="Estado">${estado}</td>
+      <td data-label="Stock">${r.stock||r.Stock||0}</td>
+      <td data-label="Oferta%">${r.oferta_pct||r.Oferta_pct||0}</td>
+      <td data-label="Acciones"><button class="btn btn-small" data-edit="${r.id}">Editar</button> ${btnToggle} <button class="btn btn-small" data-remove="${r.id}">Eliminar</button> <button class="btn btn-small" data-restock="${r.id}">Re-stock</button></td>
+    </tr>`; }).join(''); }
   async function loadProducts(){ try{ const list=await api('products_list', null, {method:'GET'}); renderProducts(list); } catch(e){}}
   function openProductDialog(data){
     const dlg = $('#dlg-product'); const form=$('#frm-product'); dlg.returnValue='';
@@ -95,11 +103,20 @@
   function addThumbPath(p){ const box=$('#thumbs'); const arr=JSON.parse(box.dataset.paths||'[]'); arr.push(p); box.dataset.paths=JSON.stringify(arr); const img=document.createElement('img'); img.src=encodeURI(p); img.alt='thumb'; box.appendChild(img); }
 
   // Pedidos
-  function renderOrders(rows){ const tb=$('#tbl-orders tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.user_id??''}</td><td>${r.usuario_nombre||''}</td><td>${r.estado}</td><td>$${Number(r.total).toFixed(2)}</td><td>${r.creado}</td><td>${r.direccion_id??''}</td><td><button class="btn btn-small" data-odetail="${r.id}">Ver</button></td></tr>`).join(''); }
+  function renderOrders(rows){ const tb=$('#tbl-orders tbody'); tb.innerHTML = rows.map(r=>`<tr>
+    <td data-label="ID">${r.id}</td>
+    <td data-label="UserID">${r.user_id??''}</td>
+    <td data-label="Nombre">${r.usuario_nombre||''}</td>
+    <td data-label="Estado">${r.estado}</td>
+    <td data-label="Total">$${Number(r.total).toFixed(2)}</td>
+    <td data-label="Creado">${r.creado}</td>
+    <td data-label="Dirección">${r.direccion_id??''}</td>
+    <td data-label="Acciones"><button class="btn btn-small" data-odetail="${r.id}">Ver</button></td>
+  </tr>`).join(''); }
   async function loadOrders(){ try{ const list=await api('orders_list', null, {method:'GET'}); renderOrders(list); renderSalesChart(list); } catch(e){} }
 
     // Detalle de pedido (modal)
-    async function openOrderDetail(id){ try{ const d=await api('orders_detail', null, {method:'GET', query:`&id=${id}`}); const dlg=document.getElementById('dlg-order'); if(!dlg) return; document.getElementById('od-id').textContent = `#${d.id}`; document.getElementById('od-meta').textContent = `${d.usuario_nombre||''} ${d.usuario_email?('('+d.usuario_email+')'):''} • Dirección ${d.direccion_id??''}`; const tb=document.getElementById('od-items'); tb.innerHTML = (d.items||[]).map(it=>{ const pct=Number(it.descuento_pct||0); const base=Number(it.precio_original||it.precio||0); const final=Number(it.precio||0); const price = pct>0 ? `<span style="text-decoration:line-through; color:var(--muted)">$${base.toFixed(2)}</span> <strong>$${final.toFixed(2)}</strong> <span class="pill" style="background:var(--accent); color:#fff">-${pct}%</span>` : `$${final.toFixed(2)}`; return `<tr><td>${it.producto_id}</td><td>${it.titulo}</td><td>${it.variante||''}</td><td>${price}</td><td>${it.cantidad}</td></tr>`; }).join(''); dlg.showModal(); } catch(err){ alert(err.message); } }
+    async function openOrderDetail(id){ try{ const d=await api('orders_detail', null, {method:'GET', query:`&id=${id}`}); const dlg=document.getElementById('dlg-order'); if(!dlg) return; document.getElementById('od-id').textContent = `#${d.id}`; document.getElementById('od-meta').textContent = `${d.usuario_nombre||''} ${d.usuario_email?('('+d.usuario_email+')'):''} • Dirección ${d.direccion_id??''}`; const tb=document.getElementById('od-items'); let subOriginal=0, subFinal=0; tb.innerHTML = (d.items||[]).map(it=>{ const pct=Number(it.descuento_pct||0); const base=Number(it.precio_original||it.precio||0); const final=Number(it.precio||0); const price = pct>0 ? `<span style="text-decoration:line-through; color:var(--muted)">$${base.toFixed(2)}</span> <strong>$${final.toFixed(2)}</strong> <span class="pill" style="background:var(--accent); color:#fff">-${pct}%</span>` : `$${final.toFixed(2)}`; subOriginal += base * Number(it.cantidad||0); subFinal += final * Number(it.cantidad||0); return `<tr><td>${it.producto_id}</td><td>${it.titulo}</td><td>${it.variante||''}</td><td>${price}</td><td>${it.cantidad}</td></tr>`; }).join(''); const resumen = document.createElement('div'); const ahorro = Math.max(0, subOriginal - subFinal); resumen.style.marginTop='8px'; resumen.innerHTML = `<div><strong>Subtotal sin descuento:</strong> $${subOriginal.toFixed(2)}</div><div><strong>Total final:</strong> $${subFinal.toFixed(2)}</div><div><strong>Ahorro:</strong> $${ahorro.toFixed(2)}</div>`; const container = dlg.querySelector('div'); if(container) container.appendChild(resumen); dlg.showModal(); } catch(err){ alert(err.message); } }
 
     // Dashboard: gráfico de ventas por día
     function renderSalesChart(rows){ const el=document.getElementById('chart-sales'); if(!el || !window.Chart) return; const byDay={}; rows.forEach(r=>{ const d=(r.creado||'').substring(0,10); const tot=Number(r.total||0); if(!d) return; byDay[d]=(byDay[d]||0)+tot; }); const days=Object.keys(byDay).sort(); const data=days.map(d=>byDay[d]); const ctx=el.getContext('2d'); if(el._chart){ el._chart.destroy(); } el._chart = new Chart(ctx,{ type:'line', data:{ labels:days, datasets:[{ label:'Ventas (USD)', data, borderColor:getComputedStyle(document.documentElement).getPropertyValue('--accent')||'#ff6b6b', tension:.25 }]}, options:{ plugins:{legend:{display:true}}, scales:{ y:{ ticks:{ callback:(v)=>'$'+Number(v).toFixed(0) } } } } }); }
@@ -108,7 +125,14 @@
     async function renderLowStock(){ try{ const list=await api('products_list',null,{method:'GET'}); const low=list.filter(r=>Number(r.stock||0)<=5); const ul=document.getElementById('low-stock-list'); if(!ul) return; ul.innerHTML = low.length? low.map(r=>`<li>#${r.id} ${r.nombre||''} — stock ${r.stock||0}</li>`).join('') : '<em>Todo con stock adecuado</em>'; } catch{} }
 
   // Usuarios
-  function renderUsers(rows){ const tb=$('#tbl-users tbody'); tb.innerHTML = rows.map(r=>`<tr><td>${r.id}</td><td>${r.nombre}</td><td>${r.usuario||''}</td><td>${r.email}</td><td>${r.role}</td><td>${r.role==='admin'?'':'<button class="btn btn-small" data-mkadmin="'+r.id+'">⭐ Hacer admin</button>'}</td></tr>`).join(''); }
+  function renderUsers(rows){ const tb=$('#tbl-users tbody'); tb.innerHTML = rows.map(r=>`<tr>
+    <td data-label="ID">${r.id}</td>
+    <td data-label="Nombre">${r.nombre}</td>
+    <td data-label="Usuario">${r.usuario||''}</td>
+    <td data-label="Email">${r.email}</td>
+    <td data-label="Rol">${r.role}</td>
+    <td data-label="Acciones">${r.role==='admin'?'':'<button class="btn btn-small" data-mkadmin="'+r.id+'">Hacer admin</button>'}</td>
+  </tr>`).join(''); }
   async function loadUsers(){ try{ const list=await api('users_list', null, {method:'GET'}); renderUsers(list); } catch(e){} }
 
   document.addEventListener('DOMContentLoaded', async ()=>{
@@ -126,8 +150,12 @@
     $('#tbl-products').addEventListener('click', async (e)=>{
       const btn = e.target.closest('button'); if(!btn) return; 
       if(btn.hasAttribute('data-edit')){ const id=Number(btn.getAttribute('data-edit')); const data=await api('products_get', null, {method:'GET', query:`&id=${id}`}); openProductDialog(data); }
-      if(btn.hasAttribute('data-del')){ const id=Number(btn.getAttribute('data-del')); await delProduct(id); }
-      if(btn.hasAttribute('data-activate')){ const id=Number(btn.getAttribute('data-activate')); await activateProduct(id); }
+      if(btn.hasAttribute('data-del')){ const id=Number(btn.getAttribute('data-del')); try { await delProduct(id); 
+          const tr = btn.closest('tr'); if(tr){ tr.querySelector('td:nth-child(4)').innerHTML = '<span class="pill">Inactivo</span>'; btn.textContent='✅ Activar'; btn.classList.remove('btn-danger'); btn.removeAttribute('data-del'); btn.setAttribute('data-activate', String(id)); }
+        } catch(err){ alert(err.message); } }
+      if(btn.hasAttribute('data-activate')){ const id=Number(btn.getAttribute('data-activate')); try { await activateProduct(id);
+          const tr = btn.closest('tr'); if(tr){ tr.querySelector('td:nth-child(4)').innerHTML = '<span class="pill">Activo</span>'; btn.textContent='🛑 Desactivar'; btn.classList.add('btn-danger'); btn.removeAttribute('data-activate'); btn.setAttribute('data-del', String(id)); }
+        } catch(err){ alert(err.message); } }
       if(btn.hasAttribute('data-remove')){ const id=Number(btn.getAttribute('data-remove')); await removeProduct(id); }
       if(btn.hasAttribute('data-restock')){ const id=Number(btn.getAttribute('data-restock')); const add=Number(prompt('Cantidad a agregar a stock','5')||'0'); if(add>0){ try{ await api('products_restock',{id, add}); await loadProducts(); await loadStats(); await renderLowStock(); } catch(err){ alert(err.message); } } }
     });

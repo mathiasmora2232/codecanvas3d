@@ -5,9 +5,15 @@
   }
   async function loadSummary(){
     try { const r = await fetch('api/cart.php?action=get',{cache:'no-store',credentials:'same-origin'}); const d=await r.json();
+      const items = Array.isArray(d.items)? d.items : [];
+      const sub = items.reduce((acc,it)=> acc + Number(it.precio_original||it.precio||0) * Number(it.cantidad||0), 0);
+      const tot = items.reduce((acc,it)=> acc + Number(it.precio||0) * Number(it.cantidad||0), 0);
+      const save = Math.max(0, sub - tot);
       $('#summary-count').textContent = `Artículos: ${d.count||0}`;
-      $('#summary-total').textContent = `Total: $${Number(d.total||0).toFixed(2)}`;
-      try { localStorage.setItem('cart_summary', JSON.stringify({count:d.count||0,total:d.total||0})); } catch {}
+      $('#summary-sub').textContent = `Subtotal sin descuento: $${sub.toFixed(2)}`;
+      $('#summary-total').textContent = `Total final: $${tot.toFixed(2)}`;
+      $('#summary-save').textContent = save>0 ? `Ahorro por descuentos: $${save.toFixed(2)}` : 'Sin descuentos aplicados';
+      try { localStorage.setItem('cart_summary', JSON.stringify({count:d.count||0,total:tot||0})); } catch {}
     } catch {}
   }
   // Ya no guardamos en localStorage: usamos API real

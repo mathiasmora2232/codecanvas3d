@@ -28,6 +28,15 @@
     #frm-product label{display:block;margin-bottom:8px}
     #frm-product input,#frm-product textarea,#frm-product select{width:100%}
     .hidden{display:none}
+    /* Vista tipo grid para tablas en móvil */
+    @media (max-width: 720px){
+      .table thead{display:none}
+      .table{border:none}
+      .table tbody{display:grid; gap:10px}
+      .table tbody tr{display:grid; grid-template-columns:1fr; gap:6px; border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--card)}
+      .table tbody td{display:flex; justify-content:space-between; align-items:center; border-bottom:none; padding:4px 0}
+      .table tbody td::before{content: attr(data-label); color: var(--muted);}
+    }
   </style>
   <script>window.ADMIN=true;</script>
 </head>
@@ -64,7 +73,10 @@
             <div class="card" style="padding:12px"><div class="row"><strong>Productos:</strong><span id="st-products">0</span></div></div>
             <div class="card" style="padding:12px"><div class="row"><strong>Pedidos:</strong><span id="st-orders">0</span></div></div>
             <div class="card" style="padding:12px"><div class="row"><strong>Usuarios:</strong><span id="st-users">0</span></div></div>
-            <div class="card" style="padding:12px"><div class="row"><strong>Ventas:</strong><span id="st-sales">$0</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Ventas (USD):</strong><span id="st-sales">$0.00</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Items vendidos:</strong><span id="st-items">0</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Subtotal sin desc.:</strong><span id="st-suboriginal">$0.00</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Ahorro por desc.:</strong><span id="st-discount">$0.00</span></div></div>
           </div>
           <div class="card" style="margin-top:12px; padding:12px">
             <h3 style="margin:0 0 8px">Ventas por día</h3>

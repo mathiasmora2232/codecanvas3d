@@ -59,5 +59,22 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (nameEl) nameEl.textContent = u.nombre || '';
     if (userEl) userEl.textContent = u.usuario || '';
     if (emailEl) emailEl.textContent = u.email || '';
+
+    // Extra: Perfil Personal mostrado directamente
+    const name2 = document.getElementById('acc-name2');
+    const user2 = document.getElementById('acc-user2');
+    const cityEl = document.getElementById('acc-city');
+    const genderEl = document.getElementById('acc-gender');
+    if (name2) name2.textContent = u.nombre || '';
+    if (user2) user2.textContent = u.usuario || '';
+    const cliente = data.cliente || {};
+    // Ciudad: intentar tomar de dirección principal, si existe
+    let ciudad = '';
+    const dprs = (data.direcciones||[]).find(d=>d.principal==1);
+    if (dprs && dprs.ciudad) ciudad = dprs.ciudad;
+    else if (cliente && cliente.ciudad_id) ciudad = `ID ${cliente.ciudad_id}`;
+    if (cityEl) cityEl.textContent = ciudad || '—';
+    const genero = cliente?.genero || '';
+    if (genderEl) genderEl.textContent = genero || '—';
   }
 });

@@ -82,6 +82,19 @@ try {
         try { $stats['pedidos'] = (int)$pdo->query('SELECT COUNT(*) FROM pedidos')->fetchColumn(); } catch (Throwable $e) { $stats['pedidos']=0; }
         try { $stats['usuarios'] = (int)$pdo->query('SELECT COUNT(*) FROM usuarios')->fetchColumn(); } catch (Throwable $e) { $stats['usuarios']=0; }
         try { $stats['ventas'] = (float)$pdo->query('SELECT IFNULL(SUM(total),0) FROM pedidos')->fetchColumn(); } catch (Throwable $e) { $stats['ventas']=0; }
+        // nuevos KPIs: items vendidos, subtotal sin descuento y ahorro total
+        try {
+            $sum = $pdo->query('SELECT IFNULL(SUM(cantidad),0) AS items,
+                                       IFNULL(SUM(precio_original*cantidad),0) AS subtotal_original,
+                                       IFNULL(SUM(precio*cantidad),0) AS subtotal_final
+                                FROM pedido_items')->fetch(PDO::FETCH_ASSOC);
+            $stats['items_vendidos'] = (int)($sum['items'] ?? 0);
+            $stats['subtotal_original'] = (float)($sum['subtotal_original'] ?? 0);
+            $stats['subtotal_final'] = (float)($sum['subtotal_final'] ?? 0);
+            $stats['ahorro_total'] = max(0.0, $stats['subtotal_original'] - $stats['subtotal_final']);
+        } catch (Throwable $e) {
+            $stats['items_vendidos'] = 0; $stats['subtotal_original']=0; $stats['subtotal_final']=0; $stats['ahorro_total']=0;
+        }
         echo json_encode($stats);
         exit;
     }
