@@ -34,6 +34,24 @@ try {
         return array_values(array_filter(array_map('trim', $parts), fn($x)=>$x!==''));
     };
 
+    // Limpieza adicional de strings con escapes o comillas redundantes
+    $cleanItem = function($s): string {
+        $s = trim((string)$s);
+        if ($s === '') return '';
+        // Si parece un JSON string, intentar decodificarlo
+        $decoded = json_decode($s, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_string($decoded)) {
+            $s = $decoded;
+        } else {
+            // Quitar comillas alrededor y desescapar \" -> "
+            $s = preg_replace('/^\"|\"$/', '"', $s); // no hace nada si no hay comillas
+            $s = preg_replace('/^"(.*)"$/', '$1', $s);
+            $s = str_replace('\\"', '"', $s);
+            $s = preg_replace('/\\{2,}/', '\\', $s);
+        }
+        return $s;
+    };
+
     $now = new DateTimeImmutable('now');
     $data = array_map(function ($r) use ($toBool, $toArray, $now) {
         $base = isset($r['precio']) ? (float)$r['precio'] : 0;
@@ -45,6 +63,7 @@ try {
         $stock = (int)($r['stock'] ?? 0);
         $lowThreshold = 5;
         $stockState = $stock <= 0 ? 'sin_stock' : ($stock <= $lowThreshold ? 'poco_stock' : 'stock_ok');
+        $specs = array_map($cleanItem, $toArray($r['especificaciones'] ?? null));
         return [
             'id' => strval($r['id']),
             'title' => $r['nombre'] ?? '',
@@ -54,7 +73,7 @@ try {
             'oferta_pct' => (int)($r['oferta_pct'] ?? 0),
             'oferta_activa' => $activeOffer,
             'descripcion' => $r['descripcion'] ?? '',
-            'especificaciones' => $toArray($r['especificaciones'] ?? null),
+            'especificaciones' => $specs,
             'imagenesPeque' => $toArray($r['imagenesPeque'] ?? null),
             'imagenInterna' => $r['imagenInterna'] ?? null,
             'destacado' => $toBool($r['destacado'] ?? false),

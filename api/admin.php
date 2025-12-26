@@ -95,13 +95,24 @@ try {
         } catch (Throwable $e) {
             $stats['items_vendidos'] = 0; $stats['subtotal_original']=0; $stats['subtotal_final']=0; $stats['ahorro_total']=0;
         }
+        // KPIs extra: promedio de orden (AOV), últimos 7 días
+        try {
+            $row = $pdo->query("SELECT IFNULL(SUM(total),0) AS sales7, COUNT(*) AS orders7 FROM pedidos WHERE creado >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetch(PDO::FETCH_ASSOC);
+            $stats['ventas_7d'] = (float)($row['sales7'] ?? 0);
+            $stats['pedidos_7d'] = (int)($row['orders7'] ?? 0);
+        } catch (Throwable $e) { $stats['ventas_7d']=0; $stats['pedidos_7d']=0; }
+        try {
+            $row2 = $pdo->query("SELECT IFNULL(SUM(pi.cantidad),0) AS items7 FROM pedido_items pi INNER JOIN pedidos p ON p.id=pi.pedido_id WHERE p.creado >= DATE_SUB(NOW(), INTERVAL 7 DAY)")->fetch(PDO::FETCH_ASSOC);
+            $stats['items_7d'] = (int)($row2['items7'] ?? 0);
+        } catch (Throwable $e) { $stats['items_7d']=0; }
+        $stats['aov'] = ($stats['pedidos'] ?? 0) > 0 ? round(($stats['ventas'] ?? 0)/($stats['pedidos'] ?? 1), 2) : 0;
         echo json_encode($stats);
         exit;
     }
 
     // Productos CRUD
     if ($action === 'products_list') {
-        $q = $pdo->query('SELECT id, nombre, precio, activo, stock, oferta_pct, created_at FROM productos ORDER BY id DESC');
+        $q = $pdo->query('SELECT id, nombre, precio, activo, stock, oferta_pct, imagenInterna, created_at FROM productos ORDER BY id DESC');
         echo json_encode($q->fetchAll(PDO::FETCH_ASSOC));
         exit;
     }
@@ -197,7 +208,8 @@ try {
         $q->execute([':id'=>$id]);
         $o = $q->fetch(PDO::FETCH_ASSOC);
         if(!$o){ http_response_code(404); echo json_encode(['error'=>'No encontrado']); exit; }
-        $qi = $pdo->prepare('SELECT id, pedido_id, producto_id, titulo, variante, precio, precio_original, descuento_pct, cantidad FROM pedido_items WHERE pedido_id=:id');
+        $qi = $pdo->prepare('SELECT pi.id, pi.pedido_id, pi.producto_id, pi.titulo, pi.variante, pi.precio, pi.precio_original, pi.descuento_pct, pi.cantidad, pr.imagenInterna AS imagen 
+                             FROM pedido_items pi LEFT JOIN productos pr ON pr.id=pi.producto_id WHERE pi.pedido_id=:id');
         $qi->execute([':id'=>$id]);
         $o['items'] = $qi->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($o);

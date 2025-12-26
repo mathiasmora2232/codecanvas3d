@@ -11,6 +11,7 @@
     .admin-nav a:hover{border-color:var(--accent);color:var(--accent)}
     .admin-nav a.active{background:var(--card);border-color:var(--accent);color:var(--accent)}
     .toolbar{display:flex;justify-content:space-between;align-items:center;margin:10px 0}
+    .table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
     .table{width:100%;border-collapse:collapse;border:1px solid var(--border);border-radius:12px;overflow:hidden}
     .table th{background:var(--card);}
     .table th,.table td{border-bottom:1px solid var(--border);padding:8px 10px;text-align:left}
@@ -28,14 +29,9 @@
     #frm-product label{display:block;margin-bottom:8px}
     #frm-product input,#frm-product textarea,#frm-product select{width:100%}
     .hidden{display:none}
-    /* Vista tipo grid para tablas en móvil */
+    /* Scroll horizontal en móvil en lugar de apilar */
     @media (max-width: 720px){
-      .table thead{display:none}
-      .table{border:none}
-      .table tbody{display:grid; gap:10px}
-      .table tbody tr{display:grid; grid-template-columns:1fr; gap:6px; border:1px solid var(--border); border-radius:12px; padding:10px; background:var(--card)}
-      .table tbody td{display:flex; justify-content:space-between; align-items:center; border-bottom:none; padding:4px 0}
-      .table tbody td::before{content: attr(data-label); color: var(--muted);}
+      .table{min-width:760px}
     }
   </style>
   <script>window.ADMIN=true;</script>
@@ -77,6 +73,10 @@
             <div class="card" style="padding:12px"><div class="row"><strong>Items vendidos:</strong><span id="st-items">0</span></div></div>
             <div class="card" style="padding:12px"><div class="row"><strong>Subtotal sin desc.:</strong><span id="st-suboriginal">$0.00</span></div></div>
             <div class="card" style="padding:12px"><div class="row"><strong>Ahorro por desc.:</strong><span id="st-discount">$0.00</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Promedio por pedido:</strong><span id="st-aov">$0.00</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Ventas 7d:</strong><span id="st-sales7">$0.00</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Pedidos 7d:</strong><span id="st-orders7">0</span></div></div>
+            <div class="card" style="padding:12px"><div class="row"><strong>Items 7d:</strong><span id="st-items7">0</span></div></div>
           </div>
           <div class="card" style="margin-top:12px; padding:12px">
             <h3 style="margin:0 0 8px">Ventas por día</h3>
@@ -93,7 +93,8 @@
             <h3>Productos</h3>
             <button id="btn-new" class="btn btn-primary">+ Nuevo producto</button>
           </div>
-          <table class="table" id="tbl-products"><thead><tr><th>ID</th><th>Nombre</th><th>Precio</th><th>Estado</th><th>Stock</th><th>Oferta%</th><th></th></tr></thead><tbody></tbody></table>
+          <div class="table-scroll"><table class="table" id="tbl-products"><thead><tr><th>ID</th><th>Imagen</th><th>Nombre</th><th>Precio</th><th>Estado</th><th>Stock</th><th>Oferta%</th><th></th></tr></thead><tbody></tbody></table></div>
+          <div id="products-pagination" class="pagination" style="margin-top:10px"></div>
           <dialog id="dlg-product">
             <form id="frm-product" style="min-width:640px">
               <h3 id="dlg-title">Producto</h3>
@@ -111,6 +112,9 @@
                   <label>Descripción<textarea id="p-descripcion" rows="4"></textarea></label>
                   <label>Especificaciones (una por línea)<textarea id="p-espec" rows="4"></textarea></label>
                   <div class="row"><label>Imagen principal</label><input id="p-img-main" type="text" placeholder="img/..." style="flex:1"><input type="file" id="up-main" accept="image/*"></div>
+                  <div style="margin-top:8px">
+                    <img id="img-main-preview" src="" alt="Previsualización" style="width:100%;height:180px;object-fit:contain;border:1px solid var(--border);border-radius:8px;background:var(--card)" />
+                  </div>
                   <div>
                     <div class="row" style="justify-content:space-between"><label>Miniaturas</label><input type="file" id="up-thumbs" accept="image/*" multiple></div>
                     <div id="thumbs" class="thumbs"></div>
@@ -127,12 +131,12 @@
 
         <div id="view-orders" class="hidden">
           <h3>Pedidos</h3>
-          <table class="table" id="tbl-orders"><thead><tr><th>ID</th><th>UserID</th><th>Nombre</th><th>Estado</th><th>Total</th><th>Creado</th><th>Dirección</th><th></th></tr></thead><tbody></tbody></table>
+          <div class="table-scroll"><table class="table" id="tbl-orders"><thead><tr><th>ID</th><th>UserID</th><th>Nombre</th><th>Estado</th><th>Total</th><th>Creado</th><th>Dirección</th><th></th></tr></thead><tbody></tbody></table></div>
           <dialog id="dlg-order">
             <div style="padding:16px; min-width:600px">
               <h3>Pedido <span id="od-id"></span></h3>
               <div id="od-meta" style="margin-bottom:8px"></div>
-              <table class="table"><thead><tr><th>ProductoID</th><th>Título</th><th>Variante</th><th>Precio</th><th>Cantidad</th></tr></thead><tbody id="od-items"></tbody></table>
+              <table class="table"><thead><tr><th>Imagen</th><th>ProductoID</th><th>Título</th><th>Variante</th><th>Precio</th><th>Cantidad</th></tr></thead><tbody id="od-items"></tbody></table>
               <menu style="margin-top:10px; display:flex; gap:8px; justify-content:flex-end">
                 <button type="button" class="btn" onclick="document.getElementById('dlg-order').close()">Cerrar</button>
               </menu>
@@ -142,7 +146,7 @@
 
         <div id="view-users" class="hidden">
           <h3>Usuarios</h3>
-          <table class="table" id="tbl-users"><thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Email</th><th>Rol</th><th></th></tr></thead><tbody></tbody></table>
+          <div class="table-scroll"><table class="table" id="tbl-users"><thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Email</th><th>Rol</th><th></th></tr></thead><tbody></tbody></table></div>
         </div>
       </section>
     </div>
@@ -156,7 +160,7 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="js/site.js?v=20251222" defer></script>
-  <script src="js/admin.js?v=20251222" defer></script>
+  <script src="js/site.js?v=20251224" defer></script>
+  <script src="js/admin.js?v=20251225" defer></script>
 </body>
 <html>
