@@ -1,0 +1,25 @@
+/* Admin panel compact form styles */
+.compact-form { max-width: 880px; }
+.compact-form .grid2 { grid-template-columns: 1fr 1fr; gap: 12px; }
+.compact-form label { font-size: 0.92rem; }
+.compact-form input,
+.compact-form textarea,
+.compact-form select { padding: 8px 10px; border-radius: 8px; }
+.compact-form textarea { min-height: 96px; }
+
+/* Product dialog helpers */
+#frm-product .row { gap:6px; }
+#frm-product .row label { display:flex; align-items:center; gap:6px; margin:0; }
+#img-main-preview { height: 160px !important; }
+#thumbs img { width: 56px; height: 56px; border-radius: 8px; }
+
+/* Table column for Destacado */
+#tbl-products td[data-label="Destacado"] .pill { background: var(--bg-soft); }
+
+/* File inputs: mostrar solo el botón, ocultar texto "Sin archivos seleccionados" */
+input[type="file"] { width: 160px; overflow: hidden; }
+input[type="file"]::-webkit-file-upload-button,
+input[type="file"]::file-selector-button { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); cursor: pointer; }
+/* Firefox: ajustar apariencia */
+input[type="file"]::-moz-focus-inner { border: 0; padding: 0; }
+input[type="file"] { color: transparent; }

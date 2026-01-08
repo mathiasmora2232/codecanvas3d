@@ -38,7 +38,7 @@
 
   // Productos
   let productsData = []; let productsPage = 1; const pageSize = 10;
-  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>{ const activo=(r.activo||r.Activo)?1:0; const btnToggle = activo? `<button class="btn btn-small btn-danger" data-del="${r.id}">Desactivar</button>` : `<button class="btn btn-small" data-activate="${r.id}">Activar</button>`; const estado = activo? '<span class="pill">Activo</span>' : '<span class="pill">Inactivo</span>'; const base=Number(r.precio||r.Precio||0); const pct=Number(r.oferta_pct||r.Oferta_pct||0); const final=pct>0 ? base*(1-pct/100) : base; const price = pct>0 ? `<span style="text-decoration:line-through;color:var(--muted)">$${base.toFixed(2)}</span> <strong>$${final.toFixed(2)}</strong> <span class="pill" style="background:var(--accent);color:#fff">-${pct}%</span>` : `$${final.toFixed(2)}`; const img = r.imagenInterna ? `<img src="${encodeURI(r.imagenInterna)}" alt="img" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">` : '<span class="pill">N/A</span>'; return `<tr>
+  function renderProducts(rows){ const tb=$('#tbl-products tbody'); tb.innerHTML = rows.map(r=>{ const activo=(r.activo||r.Activo)?1:0; const btnToggle = activo? `<button class="btn btn-small btn-danger" data-del="${r.id}">Desactivar</button>` : `<button class="btn btn-small" data-activate="${r.id}">Activar</button>`; const estado = activo? '<span class="pill">Activo</span>' : '<span class="pill">Inactivo</span>'; const base=Number(r.precio||r.Precio||0); const pct=Number(r.oferta_pct||r.Oferta_pct||0); const final=pct>0 ? base*(1-pct/100) : base; const price = pct>0 ? `<span style="text-decoration:line-through;color:var(--muted)">$${base.toFixed(2)}</span> <strong>$${final.toFixed(2)}</strong> <span class="pill" style="background:var(--accent);color:#fff">-${pct}%</span>` : `$${final.toFixed(2)}`; const img = r.imagenInterna ? `<img src="${encodeURI(r.imagenInterna)}" alt="img" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">` : '<span class="pill">N/A</span>'; const destacado = (r.destacado||r.Destacado)?1:0; const btnFeat = destacado? `<button class="btn btn-small" data-unfeature="${r.id}">Quitar destacado</button>` : `<button class="btn btn-small" data-feature="${r.id}">Destacar</button>`; return `<tr>
       <td data-label="ID">${r.id}</td>
       <td data-label="Imagen">${img}</td>
       <td data-label="Nombre">${r.nombre||r.Nombre||''}</td>
@@ -46,7 +46,8 @@
       <td data-label="Estado">${estado}</td>
       <td data-label="Stock">${r.stock||r.Stock||0}</td>
       <td data-label="Oferta%">${pct||0}</td>
-      <td data-label="Acciones"><button class="btn btn-small" data-edit="${r.id}">Editar</button> ${btnToggle} <button class="btn btn-small" data-remove="${r.id}">Eliminar</button> <button class="btn btn-small" data-restock="${r.id}">Re-stock</button></td>
+      <td data-label="Destacado">${destacado?'<span class="pill">Sí</span>':'<span class="pill">No</span>'}</td>
+      <td data-label="Acciones"><button class="btn btn-small" data-edit="${r.id}">Editar</button> ${btnToggle} ${btnFeat} <button class="btn btn-small" data-remove="${r.id}">Eliminar</button> <button class="btn btn-small" data-restock="${r.id}">Re-stock</button></td>
     </tr>`; }).join(''); }
   function renderProductsPagination(){ const total = productsData.length; const pages = Math.max(1, Math.ceil(total / pageSize)); const cont = document.getElementById('products-pagination'); if(!cont) return; const btn = (p, label, disabled=false)=>`<button class="btn btn-small" data-page="${p}" ${disabled?'disabled':''}>${label}</button>`; let html = btn(Math.max(1, productsPage-1),'←'); for(let i=1;i<=pages;i++){ html += `<button class="btn btn-small ${i===productsPage?'active':''}" data-page="${i}">${i}</button>`; } html += btn(Math.min(pages, productsPage+1),'→'); cont.innerHTML = html; }
   function renderProductsPage(page=1){ productsPage = page; const start = (page-1)*pageSize; const rows = productsData.slice(start, start+pageSize); renderProducts(rows); renderProductsPagination(); }
@@ -54,11 +55,27 @@
   function openProductDialog(data){
     const dlg = $('#dlg-product'); const form=$('#frm-product'); dlg.returnValue='';
     form.dataset.id = data?.id||'';
+    // snapshot original para validar cambios
+    form._original = {
+      nombre: data?.nombre||data?.Nombre||'',
+      precio: Number(data?.precio??data?.Precio??0),
+      activo: !!(data?.activo??data?.Activo??1),
+      destacado: !!(data?.destacado??data?.Destacado??0),
+      stock: Number(data?.stock??data?.Stock??0),
+      oferta_pct: Number(data?.oferta_pct??data?.Oferta_pct??0),
+      oferta_desde: data?.oferta_desde??data?.Oferta_desde??null,
+      oferta_hasta: data?.oferta_hasta??data?.Oferta_hasta??null,
+      descripcion: data?.descripcion??data?.Descripcion??'',
+      especificaciones: (()=>{ try{ const raw=data?.especificaciones||data?.Especificaciones||'[]'; const j=JSON.parse(raw); return Array.isArray(j)? j : []; } catch{ return []; } })(),
+      imagenInterna: data?.imagenInterna||data?.ImagenInterna||'',
+      imagenesPeque: (()=>{ try{ const raw=data?.imagenesPeque||data?.ImagenesPeque||'[]'; const j=JSON.parse(raw); return Array.isArray(j)? j : []; } catch{ return []; } })()
+    };
     $('#dlg-title').textContent = data?.id? `Editar #${data.id}` : 'Nuevo producto';
     const val = (obj, keys)=>{ for(const k of keys){ if(obj && obj[k] !== undefined && obj[k] !== null) return obj[k]; } return ''; };
     $('#p-nombre').value = String(val(data,['nombre','Nombre'])||'');
     (function(){ const pv = val(data,['precio','Precio']); $('#p-precio').value = (pv!=='' && pv!==undefined) ? Number(pv).toFixed(2) : ''; })();
     $('#p-activo').checked = !!(val(data,['activo','Activo']) ?? 1);
+    $('#p-destacado').checked = !!(val(data,['destacado','Destacado']) ?? 0);
     $('#p-stock').value = Number(val(data,['stock','Stock'])||0);
     $('#p-oferta').value = Number(val(data,['oferta_pct','Oferta_pct'])||0);
     $('#p-odesde').value = (val(data,['oferta_desde','Oferta_desde']) ? String(val(data,['oferta_desde','Oferta_desde'])).replace(' ','T') : '');
@@ -78,6 +95,7 @@
       nombre: $('#p-nombre').value.trim(),
       precio: Number($('#p-precio').value||0),
       activo: $('#p-activo').checked ? 1 : 0,
+      destacado: $('#p-destacado').checked ? 1 : 0,
       stock: Number($('#p-stock').value||0),
       oferta_pct: Number($('#p-oferta').value||0),
       oferta_desde: $('#p-odesde').value ? $('#p-odesde').value.replace('T',' ') : null,
@@ -87,10 +105,22 @@
       imagenInterna: $('#p-img-main').value,
       imagenesPeque: JSON.parse($('#thumbs').dataset.paths||'[]')
     };
+    // Validación básica
     if (payload.precio > 1000) { alert('El precio no puede superar $1000.'); return; }
     if (payload.precio < 0) { alert('El precio no puede ser negativo.'); return; }
+    // Verificar cambios
+    const orig = $('#frm-product')._original || {};
+    const changed = [];
+    const keys = ['nombre','precio','activo','destacado','stock','oferta_pct','oferta_desde','oferta_hasta','descripcion','imagenInterna'];
+    keys.forEach(k=>{ const ov=orig[k]; const nv=payload[k]; if(JSON.stringify(ov)!==JSON.stringify(nv)) changed.push(k); });
+    // Arrays
+    if(JSON.stringify(orig.especificaciones||[])!==JSON.stringify(payload.especificaciones||[])) changed.push('especificaciones');
+    if(JSON.stringify(orig.imagenesPeque||[])!==JSON.stringify(payload.imagenesPeque||[])) changed.push('imagenesPeque');
+    if(changed.length===0){ alert('No hay cambios para guardar.'); return; }
     await api('products_save', payload);
     $('#dlg-product').close();
+    // confirmación visual
+    const note = document.getElementById('admin-note'); if(note){ note.textContent = 'Cambios guardados ✔'; note.style.color = 'green'; setTimeout(()=>{ note.textContent=''; }, 3000); }
     await loadProducts(); await loadStats();
   }
   async function delProduct(id){ await api('products_delete', {id}); await loadProducts(); }
@@ -155,13 +185,15 @@
       const btn = e.target.closest('button'); if(!btn) return; 
       if(btn.hasAttribute('data-edit')){ const id=Number(btn.getAttribute('data-edit')); const data=await api('products_get', null, {method:'GET', query:`&id=${id}`}); openProductDialog(data); }
       if(btn.hasAttribute('data-del')){ const id=Number(btn.getAttribute('data-del')); try { await delProduct(id); 
-          const tr = btn.closest('tr'); if(tr){ tr.querySelector('td:nth-child(4)').innerHTML = '<span class="pill">Inactivo</span>'; btn.textContent='✅ Activar'; btn.classList.remove('btn-danger'); btn.removeAttribute('data-del'); btn.setAttribute('data-activate', String(id)); }
+          await loadProducts();
         } catch(err){ alert(err.message); } }
       if(btn.hasAttribute('data-activate')){ const id=Number(btn.getAttribute('data-activate')); try { await activateProduct(id);
-          const tr = btn.closest('tr'); if(tr){ tr.querySelector('td:nth-child(4)').innerHTML = '<span class="pill">Activo</span>'; btn.textContent='🛑 Desactivar'; btn.classList.add('btn-danger'); btn.removeAttribute('data-activate'); btn.setAttribute('data-del', String(id)); }
+          await loadProducts();
         } catch(err){ alert(err.message); } }
       if(btn.hasAttribute('data-remove')){ const id=Number(btn.getAttribute('data-remove')); await removeProduct(id); }
       if(btn.hasAttribute('data-restock')){ const id=Number(btn.getAttribute('data-restock')); const add=Number(prompt('Cantidad a agregar a stock','5')||'0'); if(add>0){ try{ await api('products_restock',{id, add}); await loadProducts(); await loadStats(); await renderLowStock(); } catch(err){ alert(err.message); } } }
+      if(btn.hasAttribute('data-feature')){ const id=Number(btn.getAttribute('data-feature')); try{ await api('products_set_featured',{id, featured:1}); await loadProducts(); } catch(err){ alert(err.message); } }
+      if(btn.hasAttribute('data-unfeature')){ const id=Number(btn.getAttribute('data-unfeature')); try{ await api('products_set_featured',{id, featured:0}); await loadProducts(); } catch(err){ alert(err.message); } }
     });
     $('#frm-product')?.addEventListener('submit', async (e)=>{ e.preventDefault(); try{ await saveProduct(); } catch(err){ alert(err.message); } });
     $('#btn-cancel')?.addEventListener('click', ()=>{ $('#dlg-product')?.close(); });

@@ -36,6 +36,9 @@ function ensureProductsColumns(): void {
     $try("ALTER TABLE productos ADD COLUMN oferta_pct TINYINT UNSIGNED NOT NULL DEFAULT 0");
     $try("ALTER TABLE productos ADD COLUMN oferta_desde DATETIME NULL");
     $try("ALTER TABLE productos ADD COLUMN oferta_hasta DATETIME NULL");
+    // destacado para homepage
+    $try("ALTER TABLE productos ADD COLUMN destacado TINYINT(1) NOT NULL DEFAULT 0");
+    $try("CREATE INDEX idx_destacado ON productos (destacado)");
     $try("ALTER TABLE productos MODIFY imagenInterna VARCHAR(255)");
     $try("ALTER TABLE productos MODIFY imagenesPeque TEXT");
     $try("ALTER TABLE productos ADD COLUMN updated_at TIMESTAMP NULL DEFAULT NULL");
@@ -112,7 +115,7 @@ try {
 
     // Productos CRUD
     if ($action === 'products_list') {
-        $q = $pdo->query('SELECT id, nombre, precio, activo, stock, oferta_pct, imagenInterna, created_at FROM productos ORDER BY id DESC');
+        $q = $pdo->query('SELECT id, nombre, precio, activo, stock, oferta_pct, imagenInterna, destacado, created_at FROM productos ORDER BY id DESC');
         echo json_encode($q->fetchAll(PDO::FETCH_ASSOC));
         exit;
     }
@@ -141,19 +144,20 @@ try {
         if (!is_array($imgPeq)) { $imgPeq = preg_split('/[;,]\s*/', (string)$imgPeq); }
         $imgPeq = json_encode(array_values(array_filter(array_map(function($p){ return normalizeImagePath((string)$p); }, $imgPeq))));
         $activo = !empty($in['activo']) ? 1 : 0;
+        $destacado = !empty($in['destacado']) ? 1 : 0;
         $stock = (int)($in['stock'] ?? 0);
         $oferta = (int)($in['oferta_pct'] ?? 0);
         $desde = ($in['oferta_desde'] ?? null);
         $hasta = ($in['oferta_hasta'] ?? null);
 
         if ($id > 0) {
-            $sql = 'UPDATE productos SET nombre=:n, precio=:p, descripcion=:d, especificaciones=:e, imagenInterna=:ii, imagenesPeque=:ip, activo=:a, stock=:s, oferta_pct=:o, oferta_desde=:od, oferta_hasta=:oh, updated_at=NOW() WHERE id=:id';
+            $sql = 'UPDATE productos SET nombre=:n, precio=:p, descripcion=:d, especificaciones=:e, imagenInterna=:ii, imagenesPeque=:ip, activo=:a, destacado=:f, stock=:s, oferta_pct=:o, oferta_desde=:od, oferta_hasta=:oh, updated_at=NOW() WHERE id=:id';
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([':n'=>$nombre, ':p'=>$precio, ':d'=>$descripcion, ':e'=>$especificaciones, ':ii'=>$imgInt?:null, ':ip'=>$imgPeq, ':a'=>$activo, ':s'=>$stock, ':o'=>$oferta, ':od'=>$desde, ':oh'=>$hasta, ':id'=>$id]);
+            $stmt->execute([':n'=>$nombre, ':p'=>$precio, ':d'=>$descripcion, ':e'=>$especificaciones, ':ii'=>$imgInt?:null, ':ip'=>$imgPeq, ':a'=>$activo, ':f'=>$destacado, ':s'=>$stock, ':o'=>$oferta, ':od'=>$desde, ':oh'=>$hasta, ':id'=>$id]);
         } else {
-            $sql = 'INSERT INTO productos (nombre, precio, descripcion, especificaciones, imagenInterna, imagenesPeque, activo, stock, oferta_pct, oferta_desde, oferta_hasta) VALUES (:n,:p,:d,:e,:ii,:ip,:a,:s,:o,:od,:oh)';
+            $sql = 'INSERT INTO productos (nombre, precio, descripcion, especificaciones, imagenInterna, imagenesPeque, activo, destacado, stock, oferta_pct, oferta_desde, oferta_hasta) VALUES (:n,:p,:d,:e,:ii,:ip,:a,:f,:s,:o,:od,:oh)';
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([':n'=>$nombre, ':p'=>$precio, ':d'=>$descripcion, ':e'=>$especificaciones, ':ii'=>$imgInt?:null, ':ip'=>$imgPeq, ':a'=>$activo, ':s'=>$stock, ':o'=>$oferta, ':od'=>$desde, ':oh'=>$hasta]);
+            $stmt->execute([':n'=>$nombre, ':p'=>$precio, ':d'=>$descripcion, ':e'=>$especificaciones, ':ii'=>$imgInt?:null, ':ip'=>$imgPeq, ':a'=>$activo, ':f'=>$destacado, ':s'=>$stock, ':o'=>$oferta, ':od'=>$desde, ':oh'=>$hasta]);
             $id = (int)$pdo->lastInsertId();
         }
         echo json_encode(['ok'=>true, 'id'=>$id]);
@@ -181,6 +185,17 @@ try {
         // eliminar fisicamente
         $stmt = $pdo->prepare('DELETE FROM productos WHERE id=:id');
         $stmt->execute([':id'=>$id]);
+        echo json_encode(['ok'=>true]);
+        exit;
+    }
+
+    // Destacar / quitar destacado
+    if ($action === 'products_set_featured' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $in = inputJSON();
+        $id = (int)($in['id'] ?? 0);
+        $featured = !empty($in['featured']) ? 1 : 0;
+        $stmt = $pdo->prepare('UPDATE productos SET destacado=:f, updated_at=NOW() WHERE id=:id');
+        $stmt->execute([':f'=>$featured, ':id'=>$id]);
         echo json_encode(['ok'=>true]);
         exit;
     }

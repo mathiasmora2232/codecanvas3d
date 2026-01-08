@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Bloquear secciones internas y APIs
+Disallow: /api/
+Disallow: /admin.html
+Disallow: /login.html
+Disallow: /account.html
+Disallow: /account-edit.html
+Disallow: /checkout.html
+Disallow: /carrito.html
+Disallow: /direcciones.html
+Disallow: /direccion-nueva.html
+Disallow: /pedidos.html
+
+Sitemap: /sitemap.xml

@@ -1,0 +1,4 @@
+# Bloquear acceso directo a archivos sensibles
+<Files "config.php">
+  Require all denied
+</Files>
