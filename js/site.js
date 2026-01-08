@@ -151,6 +151,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   injectAccountSidebar();
   initModal();
   initMobileNav();
+  initAnnouncementBar();
   const featuredGrid = document.getElementById('featured-grid');
   const productsGrid = document.getElementById('products-grid');
   const paginationEl = document.getElementById('products-pagination');
@@ -487,4 +488,21 @@ async function injectAccountSidebar() {
     if (it.disabled) a.setAttribute('aria-disabled', 'true');
     return a.outerHTML;
   }).join('');
+}
+
+// Announcement bar (inicio): permitir cerrar y recordar
+const ANNOUNCE_KEY = 'announcement_dismissed_v1';
+function initAnnouncementBar() {
+  const el = document.getElementById('announcement');
+  if (!el) return;
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(ANNOUNCE_KEY) === '1'; } catch {}
+  if (dismissed) { el.style.display = 'none'; return; }
+  const btn = el.querySelector('.announcement-close');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      el.style.display = 'none';
+      try { localStorage.setItem(ANNOUNCE_KEY, '1'); } catch {}
+    });
+  }
 }
