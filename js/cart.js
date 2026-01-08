@@ -8,6 +8,7 @@
 
   const listEl = document.createElement('div');
   listEl.id = 'cart-items';
+  listEl.className = 'cart-list';
   const totalEl = document.createElement('div');
   totalEl.id = 'cart-total';
   totalEl.style.marginTop = '8px';
@@ -29,41 +30,66 @@
 
   function render(items, total){
     if (!items.length) {
-      listEl.innerHTML = '<em>Carrito vacío</em>';
+      listEl.innerHTML = `
+        <div class="cart-empty">
+          <span>Tu carrito está vacío</span>
+          <a href="productos.html" class="btn btn-primary">Ver productos</a>
+        </div>`;
       totalEl.textContent = '';
       return;
     }
-    listEl.innerHTML = items.map(it=>`
-      <div class="cart-row" data-id="${it.id}" style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border)">
-        ${it.imagen ? `<img src="${safeSrc(it.imagen)}" alt="${it.titulo}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border)" onerror="this.src='img/thumb-placeholder.svg'">` : ''}
-        <div style="flex:1">
-          <div><strong>${it.titulo}</strong> ${it.variante ? `• ${it.variante}` : ''}</div>
-          <div style="color:var(--muted)">$${Number(it.precio).toFixed(2)}</div>
+    listEl.innerHTML = items.map(it=>{
+      const price = Number(it.precio||0);
+      const qty = Number(it.cantidad||1);
+      const sub = price*qty;
+      const img = it.imagen ? `<img class="cart-thumb" src="${safeSrc(it.imagen)}" alt="${it.titulo}" onerror="this.src='img/thumb-placeholder.svg'">` : '';
+      return `
+      <div class="cart-item" data-id="${it.id}">
+        ${img}
+        <div class="cart-info">
+          <h3 class="cart-title">${it.titulo}</h3>
+          ${it.variante ? `<div class="cart-variant">${it.variante}</div>` : ''}
+          <div class="cart-meta">
+            <span class="cart-price">$${price.toFixed(2)}</span>
+            <span>×</span>
+            <div class="qty-ctrl" role="group" aria-label="Cantidad">
+              <button class="btn" data-dec aria-label="Disminuir">−</button>
+              <span class="qty" aria-live="polite">${qty}</span>
+              <button class="btn" data-inc aria-label="Aumentar">+</button>
+            </div>
+          </div>
         </div>
-        <div style="display:flex; align-items:center; gap:6px">
-          <button class="btn" data-dec>-</button>
-          <span class="qty">${it.cantidad}</span>
-          <button class="btn" data-inc>+</button>
-          <button class="btn" data-del>Eliminar</button>
+        <div class="cart-actions">
+          <div class="cart-subtotal" aria-label="Subtotal">$${sub.toFixed(2)}</div>
+          <button class="btn cart-remove" data-del aria-label="Eliminar">Eliminar</button>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
     totalEl.textContent = `Total: $${Number(total).toFixed(2)}`;
   }
 
+  let updating = false;
   listEl.addEventListener('click', async (e)=>{
     const row = e.target.closest('.cart-row');
-    if (!row) return;
-    const id = Number(row.getAttribute('data-id'));
+    const item = e.target.closest('.cart-item');
+    const holder = item || row; // compat por si hay restos antiguos
+    if (!holder) return;
+    if (updating) return;
+    const id = Number(holder.getAttribute('data-id'));
+    const qtyEl = holder.querySelector('.qty');
+    const curQty = Number(qtyEl?.textContent || 1);
+    let nextQty = curQty;
+
     if (e.target.matches('[data-del]')) {
-      await send('remove', { item_id: id });
-    } else if (e.target.matches('[data-inc]')) {
-      const qty = Number(row.querySelector('.qty').textContent) + 1;
-      await send('update', { item_id: id, qty });
-    } else if (e.target.matches('[data-dec]')) {
-      const qty = Math.max(0, Number(row.querySelector('.qty').textContent) - 1);
-      await send('update', { item_id: id, qty });
+      updating = true; await send('remove', { item_id: id }); updating = false; return;
     }
+    if (e.target.matches('[data-inc]')) { nextQty = curQty + 1; }
+    if (e.target.matches('[data-dec]')) { nextQty = Math.max(0, curQty - 1); }
+    if (nextQty === curQty) return;
+    updating = true;
+    if (nextQty === 0) { await send('remove', { item_id: id }); }
+    else { await send('update', { item_id: id, qty: nextQty }); }
+    updating = false;
   });
 
   async function send(action, body){

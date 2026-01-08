@@ -1,0 +1,34 @@
+---
+deployment:
+  tasks:
+    # 1) Ajusta USERNAME y (opcional) la subcarpeta destino
+    - export DEPLOYPATH=/home/USERNAME/public_html/pagina3d/
+
+    # 2) Asegurar que el directorio de despliegue existe
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/mkdir -p $DEPLOYPATH/css $DEPLOYPATH/js $DEPLOYPATH/img $DEPLOYPATH/api $DEPLOYPATH/data
+
+    # 3) Copiar archivos HTML individuales (evita comodines y .git)
+    - /bin/cp -f index.html $DEPLOYPATH
+    - /bin/cp -f productos.html $DEPLOYPATH
+    - /bin/cp -f producto.html $DEPLOYPATH
+    - /bin/cp -f carrito.html $DEPLOYPATH
+    - /bin/cp -f checkout.html $DEPLOYPATH
+    - /bin/cp -f contacto.html $DEPLOYPATH
+    - /bin/cp -f solicitudes.html $DEPLOYPATH
+    - /bin/cp -f login.html $DEPLOYPATH
+    - /bin/cp -f account.html $DEPLOYPATH
+    - /bin/cp -f account-edit.html $DEPLOYPATH
+    - /bin/cp -f direcciones.html $DEPLOYPATH
+    - /bin/cp -f direccion-nueva.html $DEPLOYPATH
+    - /bin/cp -f pedidos.html $DEPLOYPATH
+    - /bin/cp -f admin.html $DEPLOYPATH
+
+    # 4) Copiar directorios necesarios (sin .git)
+    - /bin/cp -R css/ $DEPLOYPATH
+    - /bin/cp -R js/ $DEPLOYPATH
+    - /bin/cp -R img/ $DEPLOYPATH
+    - /bin/cp -R api/ $DEPLOYPATH
+    - /bin/cp -R data/ $DEPLOYPATH
+
+    # Nota: No uses comodines tipo * a nivel raíz para evitar copiar .git u otros.
