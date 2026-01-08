@@ -2,12 +2,16 @@
 declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
 
 require __DIR__ . '/config.php';
 
 session_set_cookie_params([
     'httponly' => true,
     'samesite' => 'Lax',
+    'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443),
 ]);
 session_start();
 
@@ -139,6 +143,8 @@ try {
             echo json_encode(['error' => 'Contraseña incorrecta']);
             exit;
         }
+        // Protección contra fijación de sesión
+        session_regenerate_id(true);
         $_SESSION['uid'] = (int)$row['id'];
         echo json_encode(['ok'=>true, 'user' => ['id'=>$row['id'], 'nombre'=>$row['nombre'], 'usuario'=>$row['usuario'], 'email'=>$row['email'], 'role'=>$row['role'], 'created_at'=>$row['created_at']]]);
         exit;

@@ -1,9 +1,9 @@
 <?php
 // Configuración de conexión a la base de datos
-$servername = "localhost";
-$username   = "exkoltdyxc_mathias";
-$password   = "Adminrot";
-$dbname     = "exkoltdyxc_printmodels";
+$servername = getenv('DB_HOST') ?: "localhost";
+$username   = getenv('DB_USER') ?: "exkoltdyxc_mathias";
+$password   = getenv('DB_PASS') ?: "Adminrot";
+$dbname     = getenv('DB_NAME') ?: "exkoltdyxc_printmodels";
 
 // Devuelve una única instancia PDO lista para usarse
 function pdo(): PDO {
