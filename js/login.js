@@ -26,15 +26,10 @@
       const res = await fetch('api/auth.php?action=status', { cache:'no-store', credentials:'same-origin' });
       const data = await res.json();
       if (data && data.user) {
-        // Ocultamos formularios y avisamos
-        hide(loginView); hide(registerView);
-        const msg = document.createElement('div');
-        msg.className = 'account-note';
-        msg.textContent = 'Ya estás autenticado. Gestiona tu cuenta a continuación.';
-        loginView?.parentElement?.insertBefore(msg, loginView);
-        const go = document.createElement('p');
-        go.innerHTML = '<a class="btn" href="account.html">Ir a Mi cuenta</a>';
-        msg.parentElement?.insertBefore(go, msg.nextSibling);
+        const params = new URLSearchParams(window.location.search);
+        const next = params.get('next');
+        window.location.href = next ? next : 'account.html';
+        return;
       }
     } catch {}
   })();
@@ -76,8 +71,10 @@
         loginMsg.textContent = data.detail || 'Error al iniciar sesión.';
         return;
       }
-      // Exitoso: redirigir a account
-      window.location.href = 'account.html';
+      // Exitoso: redirigir a destino solicitado o a Mi cuenta
+      const params = new URLSearchParams(window.location.search);
+      const next = params.get('next');
+      window.location.href = next ? next : 'account.html';
     } catch (err) {
       loginMsg.textContent = 'Error de red: ' + err.message;
     }

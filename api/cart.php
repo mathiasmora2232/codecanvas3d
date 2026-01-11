@@ -1,8 +1,5 @@
 <?php
 declare(strict_types=1);
-ini_set('display_errors', '0');
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-ob_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 require __DIR__ . '/config.php';
@@ -22,9 +19,6 @@ const MAX_TOTAL = 25;    // máximo total de artículos
 function inputJSON(): array {
     $raw = file_get_contents('php://input');
     $data = json_decode($raw, true);
-    if (!is_array($data) || empty($data)) {
-        $data = $_POST ?: $_GET;
-    }
     return is_array($data) ? $data : [];
 }
 
@@ -80,8 +74,8 @@ function cartSummary(): array {
 }
 
 try {
+    $action = $_GET['action'] ?? $_POST['action'] ?? (inputJSON()['action'] ?? 'get');
     $in = inputJSON();
-    $action = $_GET['action'] ?? $_POST['action'] ?? ($in['action'] ?? 'get');
 
     if ($action === 'get') {
         echo json_encode(cartSummary());
@@ -89,8 +83,8 @@ try {
     }
 
     if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-        $pid = (int)($in['product_id'] ?? ($_POST['product_id'] ?? ($_GET['product_id'] ?? 0)));
-        $qty = max(1, (int)($in['qty'] ?? ($_POST['qty'] ?? ($_GET['qty'] ?? 1))));
+        $pid = (int)($in['product_id'] ?? 0);
+        $qty = max(1, (int)($in['qty'] ?? 1));
         $variant = trim((string)($in['variant'] ?? ''));
         $p = productById($pid);
         if (!$p) { http_response_code(404); echo json_encode(['error'=>'Producto no encontrado']); exit; }

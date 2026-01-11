@@ -53,7 +53,7 @@ try {
     };
 
     $now = new DateTimeImmutable('now');
-    $data = array_map(function ($r) use ($toBool, $toArray, $now, $cleanItem) {
+    $data = array_map(function ($r) use ($toBool, $toArray, $now) {
         $base = isset($r['precio']) ? (float)$r['precio'] : 0;
         $offer = (int)($r['oferta_pct'] ?? 0);
         $desde = !empty($r['oferta_desde']) ? new DateTimeImmutable($r['oferta_desde']) : null;

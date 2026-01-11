@@ -36,14 +36,20 @@ window.addEventListener('DOMContentLoaded', async () => {
   initMobileNav();
 
   const status = await authStatus();
+  if (!status.user) {
+    // Redirigir si no está autenticado
+    const next = encodeURIComponent('account.html');
+    window.location.href = `login.html?next=${next}`;
+    return;
+  }
   toggleAccountUI(status.user);
-  if (status.user) { await loadProfile(); }
+  await loadProfile();
 
   const logoutBtn = document.getElementById('logout-btn');
   logoutBtn?.addEventListener('click', async ()=>{
     await authLogout();
-    const st = await authStatus();
-    toggleAccountUI(st.user);
+    // Redirigir a login tras cerrar sesión
+    window.location.href = 'login.html';
   });
 
 

@@ -8,8 +8,17 @@
   async function requireAdmin(){
     const st = await status();
     const note = $('#admin-note');
-    if(!st.user){ note.textContent='Debes iniciar sesión.'; note.style.color='var(--danger)'; return false; }
-    if(st.user.role!=='admin'){ note.textContent='Acceso solo para administradores.'; note.style.color='var(--danger)'; return false; }
+    if(!st.user){
+      if (note) { note.textContent='Debes iniciar sesión.'; note.style.color='var(--danger)'; }
+      const next = encodeURIComponent('admin.html');
+      window.location.href = `login.html?next=${next}`;
+      return false;
+    }
+    if(st.user.role!=='admin'){
+      if (note) { note.textContent='Acceso solo para administradores.'; note.style.color='var(--danger)'; }
+      window.location.href = 'account.html';
+      return false;
+    }
     note.textContent = `Sesión: ${st.user.nombre} (${st.user.email}) — Administrador`;
     return true;
   }

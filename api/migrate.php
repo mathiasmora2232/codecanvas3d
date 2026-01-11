@@ -9,8 +9,7 @@ function execSQL(PDO $pdo, string $sql): void {
 
 try {
     $pdo = pdo();
-    // Nota: en MySQL los DDL (CREATE/ALTER) hacen commit implícito;
-    // evitar transacciones alrededor de DDL para no causar errores.
+    $pdo->beginTransaction();
 
     // usuarios: agregar columna usuario (username) única si no existe
     execSQL($pdo, "CREATE TABLE IF NOT EXISTS usuarios (
@@ -129,8 +128,10 @@ try {
         INDEX idx_cart (carrito_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    $pdo->commit();
     echo "Migración completada.\n";
 } catch (Throwable $e) {
+    if ($pdo && $pdo->inTransaction()) $pdo->rollBack();
     http_response_code(500);
     echo "Error en migración: ".$e->getMessage();
 }

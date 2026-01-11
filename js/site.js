@@ -506,3 +506,19 @@ function initAnnouncementBar() {
     });
   }
 }
+
+// Toast util: mostrar mensajes flotantes cortos
+function showToast(message, opts={}) {
+  const dur = Math.max(1500, Number(opts.duration||2500));
+  let el = document.getElementById('site-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'site-toast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = String(message||'');
+  el.classList.add('show');
+  clearTimeout(el._t); // limpiar anterior si existe
+  el._t = setTimeout(() => { el.classList.remove('show'); }, dur);
+}

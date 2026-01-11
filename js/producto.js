@@ -135,24 +135,27 @@ async function renderProduct() {
   if (addBtn) {
     addBtn.addEventListener('click', async () => {
       try {
-        cartMsg.textContent = '';
+        if (cartMsg) { cartMsg.textContent = ''; }
         const variant = (colorSel?.value || 'Blanco');
         const body = { action: 'add', product_id: p.id, variant, qty: 1 };
         const res = await fetch('api/cart.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(body) });
         const out = await res.json();
         if (!res.ok || out.error) {
-          cartMsg.textContent = out.detail || out.error || 'No se pudo agregar al carrito';
-          cartMsg.style.color = 'var(--danger)';
+          if (cartMsg) {
+            cartMsg.textContent = out.detail || out.error || 'No se pudo agregar al carrito';
+            cartMsg.style.color = 'var(--danger)';
+          }
           return;
         }
-        cartMsg.textContent = 'Agregado al carrito';
-        cartMsg.style.color = 'var(--accent)';
+        try { showToast('Artículo añadido con éxito'); } catch {}
         // Guardar resumen en localStorage y notificar
         try { localStorage.setItem('cart_summary', JSON.stringify({ count: out.count||0, total: out.total||0 })); } catch {}
         try { document.dispatchEvent(new CustomEvent('cart:updated')); } catch {}
       } catch (err) {
-        cartMsg.textContent = 'Error: ' + err.message;
-        cartMsg.style.color = 'var(--danger)';
+        if (cartMsg) {
+          cartMsg.textContent = 'Error: ' + err.message;
+          cartMsg.style.color = 'var(--danger)';
+        }
       }
     });
   }

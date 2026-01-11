@@ -1,9 +1,5 @@
 <?php
 declare(strict_types=1);
-// Evitar que warnings/notices rompan respuestas JSON
-ini_set('display_errors', '0');
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-ob_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');

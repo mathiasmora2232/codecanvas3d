@@ -1,50 +1,31 @@
-# Entorno de pruebas con Docker
+# Página3D
 
-Este proyecto incluye configuración para levantar una instancia local de pruebas usando Docker (PHP + Apache + MySQL).
+Sitio web con frontend estático (HTML/CSS/JS) y API en PHP (PDO MySQL).
 
 ## Requisitos
+- PHP 8.1+ con extensiones `pdo` y `pdo_mysql` habilitadas
+- Servidor web local (Apache, Nginx) o el servidor embebido de PHP
+- MySQL/MariaDB
 
-## Puesta en marcha
+## Puesta en marcha (local)
+1) Clona o copia el proyecto dentro de tu raíz web (por ejemplo, `htdocs` en XAMPP) o usa el servidor embebido:
 
 ```bash
-# En la carpeta del proyecto
-docker compose up -d --build
-
-# Ver logs (opcional)
-docker compose logs -f web
+# Opción servidor embebido de PHP
+php -S localhost:8080 -t .
 ```
 
- Sitio: http://localhost:8082
-   - `http://localhost:8082/api/products.php`
-   - `http://localhost:8082/api/auth.php?action=me` (cuando haya sesión)
+2) Crea una base de datos (por ejemplo, `pagina3d`) y configura las credenciales mediante variables de entorno aceptadas por `api/config.php` (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`) o ajusta ese archivo según tu entorno.
 
-## Variables de entorno
-El contenedor `web` usa estas variables (definidas en `docker-compose.yml`):
-   - Abre en el navegador: `http://localhost:8082/api/migrate.php`
-- `DB_USER=app`
-- `DB_PASS=app123`
-- `DB_NAME=pagina3d`
-   - `http://localhost:8082/api/seed_products.php` carga `data/products.json` si `productos` está vacío.
-El contenedor `db` crea la base `pagina3d` con usuario `app/app123`.
+3) Inicializa el esquema básico visitando en el navegador:
+- http://localhost:8080/api/migrate.php
 
-## Inicializar la base de datos
-1. Migraciones mínimas:
-   - Abre en el navegador: `http://localhost:8080/api/migrate.php`
-   - Para tablas de pedidos: se crean automáticamente al usar `api/orders.php`
-2. Usuarios y roles:
-   - Al usar `api/auth.php` se asegura la tabla `usuarios` y agrega la columna `role`.
-3. Seed de productos (opcional):
-   - `http://localhost:8080/api/seed_products.php` carga `data/products.json` si `productos` está vacío.
+4) (Opcional) Carga productos de ejemplo desde `data/products.json`:
+- http://localhost:8080/api/seed_products.php
+
+5) Abre el sitio:
+- http://localhost:8080/
 
 ## Notas
-- El código se monta como volumen: los cambios se reflejan al instante en el contenedor.
-- Las subidas de imágenes se guardan en `img/uploads` (volumen `php_uploads`).
-- Para reiniciar todo (incluyendo datos):
-
-```bash
-docker compose down -v
-```
-
-## Troubleshooting
-- Si MySQL tarda en iniciar, espera el healthcheck y revisa `docker compose logs db`.
-- Si ves error de conexión a DB, valida que `api/config.php` lee variables de entorno (ya configurado).
+- La API valida sesión vía `api/auth.php`; algunas rutas requieren estar autenticado.
+- Si ves errores de conexión a DB, revisa que las credenciales estén bien y que `pdo_mysql` esté habilitado.

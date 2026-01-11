@@ -1,8 +1,5 @@
 <?php
 declare(strict_types=1);
-ini_set('display_errors', '0');
-error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-ob_start();
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
@@ -17,9 +14,6 @@ session_start();
 function inputJSON(): array {
     $raw = file_get_contents('php://input');
     $data = json_decode($raw, true);
-    if (!is_array($data) || empty($data)) {
-        $data = $_POST ?: $_GET;
-    }
     return is_array($data) ? $data : [];
 }
 
@@ -73,10 +67,10 @@ try {
     ensureOrdersTables();
 
     $pdo = pdo();
-    $in = inputJSON();
-    $action = $_GET['action'] ?? $_POST['action'] ?? ($in['action'] ?? 'list');
+    $action = $_GET['action'] ?? $_POST['action'] ?? (inputJSON()['action'] ?? 'list');
 
     if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $in = inputJSON();
         $uid = isset($_SESSION['uid']) ? (int)$_SESSION['uid'] : null; // permitir invitado (NULL)
         $direccionId = isset($in['direccion_id']) ? (int)$in['direccion_id'] : null;
 
