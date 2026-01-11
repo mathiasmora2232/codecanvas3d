@@ -7,7 +7,13 @@
   async function loadIfEditing(){ const id = getEditingId(); if(!id) return; const r = await fetch('api/profile.php?action=addr_list',{credentials:'same-origin'}); const list = await r.json(); const d = list.find(x=>String(x.id)===String(id)); if(!d) return; document.title='Página 3D | Editar dirección'; const h=document.querySelector('.section-title'); if(h) h.textContent='Editar dirección'; const btn=document.querySelector('#addr-form button[type="submit"]'); if(btn) btn.textContent='Guardar cambios'; document.getElementById('af-etiqueta').value=d.etiqueta||''; document.getElementById('af-linea1').value=d.linea1||''; document.getElementById('af-linea2').value=d.linea2||''; document.getElementById('af-ciudad').value=d.ciudad_id||''; document.getElementById('af-provincia').value=d.provincia||''; document.getElementById('af-pais').value=d.pais||''; document.getElementById('af-cp').value=d.codigo_postal||''; }
   document.addEventListener('DOMContentLoaded', async ()=>{
     applySavedTheme(); injectThemeSwitcher(); initMobileNav();
-    const st = await status(); toggle(st.user); if(!st.user) return;
+    const st = await status();
+    if(!st.user){
+      const next = encodeURIComponent('direccion-nueva.html');
+      window.location.href = `login.html?next=${next}`;
+      return;
+    }
+    toggle(st.user);
     const cities = await loadCities(); const citySel=document.getElementById('af-ciudad'); citySel.innerHTML = '<option value="">--</option>' + cities.map(c=>`<option value="${c.id}">${c.nombre}${c.provincia?(', '+c.provincia):''}</option>`).join('');
     const provs = await loadProvinces(); const provSel=document.getElementById('af-provincia'); provSel.innerHTML = '<option value="">--</option>' + (Array.isArray(provs)?provs:[]).map(p=>`<option value="${p}">${p}</option>`).join('');
     // Sync provincia on city change

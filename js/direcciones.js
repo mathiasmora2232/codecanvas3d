@@ -5,8 +5,13 @@
   async function fetchList(){ const r=await fetch('api/profile.php?action=addr_list',{credentials:'same-origin'}); if(!r.ok) return []; return r.json(); }
   document.addEventListener('DOMContentLoaded', async ()=>{
     applySavedTheme(); injectThemeSwitcher(); initMobileNav();
-    const st = await status(); toggle(st.user);
-    if(!st.user) return;
+    const st = await status();
+    if(!st.user){
+      const next = encodeURIComponent('direcciones.html');
+      window.location.href = `login.html?next=${next}`;
+      return;
+    }
+    toggle(st.user);
     const list = await fetchList(); renderAddresses(list);
     document.getElementById('addr-list')?.addEventListener('click', async (e)=>{
       const b=e.target.closest('[data-del]'); if(!b) return; const id=b.closest('[data-id]')?.getAttribute('data-id');

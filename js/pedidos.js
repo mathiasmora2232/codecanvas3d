@@ -29,6 +29,14 @@
   }
   document.addEventListener('DOMContentLoaded', async ()=>{
     applySavedTheme(); injectThemeSwitcher(); initMobileNav();
-    const st=await status(); toggle(st.user); if(st.user) await renderOrders(st.user);
+    const st=await status();
+    // Redirigir si no hay sesión
+    if(!st.user){
+      const next = encodeURIComponent('pedidos.html');
+      window.location.href = `login.html?next=${next}`;
+      return;
+    }
+    toggle(st.user);
+    await renderOrders(st.user);
   });
 })();
